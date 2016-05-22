@@ -1,0 +1,26 @@
+{
+  "name": "convnetjs-samples",
+  "version": "1.0.0",
+  "description": "Cool samples using ConvNetJS",
+  "main": "index.js",
+  "dependencies": {
+    "bytebuffer": "^5.0.1",
+    "convnetjs": "^0.3.0",
+    "d3": "^3.5.17",
+    "protobuf-textformat": "^1.0.0",
+    "protobufjs": "^5.0.1",
+    "queue-async": "^1.2.1",
+    "webcamjs": "^1.0.6"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "convnet",
+    "convnetjs",
+    "deeplearning"
+  ],
+  "author": "Christoph Koerner",
+  "license": "MIT"
+}
