@@ -1,0 +1,29 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>ConvNetJS Sample - AlexNet</title>
+
+    <script src="node_modules/convnetjs/build/util.js"></script>
+    <script src="node_modules/convnetjs/build/vis.js"></script>
+    <script src="libs/convnet.js?2"></script>
+
+    <script src="node_modules/d3/d3.min.js"></script>
+    <script src="node_modules/queue-async/build/d3-queue.min.js"></script>
+
+    <script src="scripts/utils.js"></script>
+    <script src="scripts/CaffeModel.js?3"></script>
+  </head>
+  <body>
+    <script language="JavaScript">
+
+      // Let's create a AlexNet model from Caffe
+      var model = new CaffeModel('models/bvlc_alexnet');
+      
+      model.on('createModel', function(){
+        model.debugStructure();
+      });
+
+    </script>
+
+  </body>
+</html>

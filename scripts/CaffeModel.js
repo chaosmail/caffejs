@@ -1,7 +1,7 @@
 var CaffeModel = (function(cn){
 
-  function CaffeModel(path_){
-
+  function CaffeModel(path_, weights){
+    weights = weights === undefined ? true : false;
     var self = this;
     this.name = "";
     this.path = path_;
@@ -14,7 +14,9 @@ var CaffeModel = (function(cn){
     });
 
     this.dispatch.on('createModel', function(){
-      self.loadWeights();
+      if (weights) {
+        self.loadWeights();
+      }
     });
 
     this.loadModel();
@@ -132,9 +134,9 @@ var CaffeModel = (function(cn){
   }
 
   function caffeLayerToJs(layer, i) {
-    switch (layer.type) {
+    switch (layer.type.toLowerCase()) {
 
-      case 'Input':
+      case 'input':
         var p = layer.input_param;
         return { 
           name: layer.name, output: layer.top, input: layer.bottom, id: i,
@@ -143,7 +145,7 @@ var CaffeModel = (function(cn){
           })
         };
       
-      case 'Convolution':
+      case 'convolution':
         var p = layer.param;
         var cp = layer.convolution_param;
         return { 
@@ -153,35 +155,38 @@ var CaffeModel = (function(cn){
             filters: +cp.num_output,
             pad: cp && cp.pad !== undefined ? +cp.pad : 0.0,
             stride: cp && cp.stride !== undefined ? +cp.stride : 1.0,
-            l1_decay_mul: p & p[0].decay_mult !== undefined ? +p[0].decay_mult : 0.0,
-            l2_decay_mul: p & p[1].decay_mult !== undefined ? +p[1].decay_mult : 1.0
+            l1_decay_mul: p && p[0].decay_mult !== undefined ? +p[0].decay_mult : 0.0,
+            l2_decay_mul: p && p[1].decay_mult !== undefined ? +p[1].decay_mult : 1.0
           })
         };
 
-      case 'LRN':
+      case 'lrn':
         var p = layer.lrn_param;
         return { 
           name: layer.name, output: layer.top, input: layer.bottom, id: i,
           cn: new cn.LocalResponseNormalizationLayer({
-            k: 1, n: +p.local_size, alpha: +p.alpha, beta: +p.beta
+            k: 1,
+            n: +p.local_size,
+            alpha: +p.alpha,
+            beta: +p.beta
           })
         };
 
-      case 'Dropout':
+      case 'dropout':
         var dp = layer.dropout_param;
         return { 
           name: layer.name, output: layer.top, input: layer.bottom, id: i,
           cn: new cn.DropoutLayer({drop_prob: +dp.dropout_ratio})
         };
 
-      case 'Concat':
+      case 'concat':
         var cp = layer.concat_param;
         return { 
           name: layer.name, output: layer.top, input: layer.bottom, id: i,
           cn: new cn.ConcatLayer({axis: cp && cp.axis != undefined ? +cp.axis : 1})
         };
 
-      case 'Pooling':
+      case 'pooling':
         var pp = layer.pooling_param;
         return { 
           name: layer.name, output: layer.top, input: layer.bottom, id: i,
@@ -192,37 +197,38 @@ var CaffeModel = (function(cn){
           })
         };
 
-      case 'InnerProduct':
+      case 'inner_product':
+      case 'innerproduct':
         var pp = layer.inner_product_param;
         var p = layer.param;
         return { 
           name: layer.name, output: layer.top, input: layer.bottom, id: i,
           cn: new cn.FullyConnLayer({
             num_neurons: +pp.num_output,
-            l1_decay_mul: p & p[0].decay_mult !== undefined ? +p[0].decay_mult : 0.0,
-            l2_decay_mul: p & p[1].decay_mult !== undefined ? +p[1].decay_mult : 1.0
+            l1_decay_mul: p && p[0].decay_mult !== undefined ? +p[0].decay_mult : 0.0,
+            l2_decay_mul: p && p[1].decay_mult !== undefined ? +p[1].decay_mult : 1.0
           })
         };
 
-      case 'Softmax':
+      case 'softmax':
         return { 
           name: layer.name, output: layer.top, input: layer.bottom, id: i,
           cn: new cn.SoftmaxLayer({})
         };
 
-      case 'ReLU':
+      case 'relu':
         return { 
           name: layer.name, output: layer.top, input: layer.bottom, id: i,
           cn: new cn.ReluLayer({})
         };
 
-      case 'Sigmoid':
+      case 'sigmoid':
         return { 
           name: layer.name, output: layer.top, input: layer.bottom, id: i,
           cn: new cn.SigmoidLayer({})
         };
 
-      case 'Tanh':
+      case 'tanh':
         return { 
           name: layer.name, output: layer.top, input: layer.bottom, id: i,
           cn: new cn.TanhLayer({})
@@ -246,9 +252,10 @@ var CaffeModel = (function(cn){
       });
     }
 
+    var layers = json.layer || json.layers;
+
     this.layers = this.layers.concat(
-      json.layer
-        .map(caffeLayerToJs)
+      layers.map(caffeLayerToJs)
         .filter(function(d){
           return d !== undefined;
         })
