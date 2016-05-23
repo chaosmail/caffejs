@@ -1,15 +1,17 @@
+from __future__ import print_function
 import fs
 import json
 import numpy as np
 
-# Make sure that caffe is on the python path:
+# Make sure that caffe and pycaffe are installed
+# and on the python path:
 caffe_root = '../caffe/'  # this file is expected to be in {caffe_root}/examples
 import sys
 sys.path.insert(0, caffe_root + 'python')
 
 import caffe
 
-model = "bvlc_alexnet"
+model = "bvlc_googlenet"
 
 # Set the right path to your model definition file, pretrained model weights,
 # and the image you would like to classify.
@@ -35,9 +37,9 @@ for key in net.params:
 	nb_col = blobs[0].height
 	nb_row = blobs[0].width
 
-	print(nb_filter, stack_size, nb_col, nb_row)	
-	print(np.array(blobs[0].data).shape)
-	print(np.array(blobs[1].data).shape)
+	print("====> Layer: ", key)
+	print("Expected Shape: ", nb_filter, stack_size, nb_col, nb_row)	
+	print("Found Shape: ", np.array(blobs[0].data).shape)
 
 	weights_p = np.array(blobs[0].data).reshape((nb_filter, stack_size*nb_col*nb_row))
 	weights_b = np.array(blobs[1].data)

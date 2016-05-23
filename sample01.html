@@ -19,22 +19,51 @@
    
     <div class='camera' style="width:224px; height:224px;"></div>
 
-    <div class='model'></div>
+    <button onclick="cam.snap()" class="take-picture" style="display: none;">Picture</button>
 
     <script language="JavaScript">
 
-      // var cam = new Camera('.camera', 224, 224);
+      // Image dimensions
+      var width = 224;
+      var height = 224;
+      
+      // Compare top-n labels
+      var n = 5;
+      var format = d3.format('.2%');
 
-      var model = new CaffeModel('models/googlenet_places205');
-      // var model = new CaffeModel('models/bvlc_alexnet');
+      // Let's hook up the webcam
+      var cam = new Camera('.camera', width, height);
+
+      var labels;
+      d3.text('data/map_clsloc.txt', function(data){
+        labels = data.split('\n').map(function(d){
+          return d.split(' ')[2];
+        });
+      });
+
+      // Let's create a GoogLeNet model from Caffe
+      var model = new CaffeModel('models/bvlc_googlenet');
+
+      // the mean value can be found in train_val.prototxt
+      var mean = {B:104, G:117, R:123};
       
       model.on('loadWeights', function(){
         model.debugStructure();
+        d3.select('.take-picture')
+          .style('display', 'block');
+      });
 
-        // cam.stream(function(data){
-        //   var scores = model.forward(rgb2vol(data));
-        //   console.log(acc);
-        // }, 5000);
+      cam.on('stream', function(data){
+        var input = rgb2vol(data, width, height, mean);
+        console.log(input);
+
+        var scores = model.forward(input);
+        var topInd = argmaxn(scores.w, n);
+        var topVal = maxn(scores.w, n);
+
+        for (var i=0;i<n;i++) {
+          console.log(format(topVal[i]) + ' ' + labels[topInd[i]]);
+        }
       });
 
     </script>

@@ -5,7 +5,7 @@ var Camera = (function Camera(){
     this.width = width || 160;
     this.height = height || 120;
     this.frequency = frequency || 1000;
-    this.runnnig = true;
+    this.runnnig = false;
     this.dispatch = d3.dispatch('stream');
 
     Webcam.attach(elem);
@@ -15,7 +15,7 @@ var Camera = (function Camera(){
     });
   }
 
-  Camera.prototype.step = function() {
+  Camera.prototype.snap = function() {
     Webcam.snap((function(data_uri, canvas, ctx) {
       // Read the data from the canvas object
       var img = ctx.getImageData(0, 0, this.width, this.height);
@@ -45,7 +45,12 @@ var Camera = (function Camera(){
   }
 
   Camera.prototype.performStream = function() {
-    setTimeout(this.step.bind(this), this.frequency);
+    this.runnnig = true;
+    setTimeout(this.snap.bind(this), this.frequency);
+  }
+
+  Camera.prototype.on = function(event, callbackFn) {
+    this.dispatch.on(event, callbackFn);
   }
 
   Camera.prototype.stream = function(cb, frequency) {

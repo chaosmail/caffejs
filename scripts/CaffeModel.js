@@ -84,13 +84,13 @@ var CaffeModel = (function(cn){
 
       switch(layer.cn.layer_type){
         case 'conv':
-          layer.cn.out_sx = Math.floor((l.in_sx + l.pad * 2 - l.sx) / l.stride + 1);
-          layer.cn.out_sy = Math.floor((l.in_sy + l.pad * 2 - l.sy) / l.stride + 1);
+          layer.cn.out_sx = Math.round((l.in_sx + l.pad * 2 - l.sx) / l.stride + 1);
+          layer.cn.out_sy = Math.round((l.in_sy + l.pad * 2 - l.sy) / l.stride + 1);
           break;
         case 'pool':
           layer.cn.out_depth = l.in_depth;
-          layer.cn.out_sx = Math.floor((l.in_sx + l.pad * 2 - l.sx) / l.stride + 1);
-          layer.cn.out_sy = Math.floor((l.in_sy + l.pad * 2 - l.sy) / l.stride + 1);
+          layer.cn.out_sx = Math.round((l.in_sx + l.pad * 2 - l.sx) / l.stride + 1);
+          layer.cn.out_sy = Math.round((l.in_sy + l.pad * 2 - l.sy) / l.stride + 1);
           break;
         case 'fc':
           layer.cn.num_inputs = l.in_sx * l.in_sy * l.in_depth;
@@ -136,7 +136,6 @@ var CaffeModel = (function(cn){
 
       case 'Input':
         var p = layer.input_param;
-        console.log(layer);
         return { 
           name: layer.name, output: layer.top, input: layer.bottom, id: i,
           cn: new cn.InputLayer({
@@ -299,7 +298,7 @@ var CaffeModel = (function(cn){
           // Initialize Filters
           layer.cn.filters = [];
           for(var i=0;i<layer.cn.out_depth;i++) {
-            layer.cn.filters.push(new convnetjs.Vol(layer.cn.sx, layer.cn.sy, layer.cn.in_depth));
+            layer.cn.filters.push(new convnetjs.Vol(layer.cn.sx || 1, layer.cn.sy || 1, layer.cn.in_depth));
           }
 
           // Initialize Biases
@@ -483,9 +482,13 @@ var CaffeModel = (function(cn){
   // forward prop the network. 
   // The trainer class passes is_training = true, but when this function is
   // called from outside (not from the trainer), it defaults to prediction mode
-  CaffeModel.prototype.forward = function(V, is_training) {
+  CaffeModel.prototype.forward = function(V, is_training, debug) {
     if(is_training === undefined) {
       is_training = false;
+    }
+    var _start, _fstart;
+    if (debug) {
+      _start = performance.now();
     }
     var actHistory = d3.map();
     var act;
@@ -501,9 +504,20 @@ var CaffeModel = (function(cn){
       else {
         act = actHistory.get(prev[0].name);
       }
-      act = layer.cn.forward(act, is_training);      
+      if (debug) {
+        _fstart = performance.now();
+      }
+      act = layer.cn.forward(act, is_training);  
+      if (debug) {
+        console.info(layer.cn.layer_type + '::' + layer.name + ' in ', performance.now() - _fstart);
+      }    
       actHistory.set(layer.name, act);
     });
+
+    if (debug) {
+      console.info('Forward pass in ', performance.now() - _start)
+    }
+
     return act;
   }
 

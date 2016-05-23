@@ -26,14 +26,7 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
   // Array utilities
   var zeros = function(n) {
     if(typeof(n)==='undefined' || isNaN(n)) { return []; }
-    if(typeof ArrayBuffer === 'undefined') {
-      // lacking browser support
-      var arr = new Array(n);
-      for(var i=0;i<n;i++) { arr[i]= 0; }
-      return arr;
-    } else {
-      return new Float64Array(n);
-    }
+    return new Float32Array(n);
   }
 
   var arrContains = function(arr, elt) {
@@ -147,8 +140,7 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
   // the data. c is optionally a value to initialize the volume
   // with. If c is missing, fills the Vol with random numbers.
   var Vol = function(sx, sy, depth, c) {
-    // this is how you check if a variable is an array. Oh, Javascript :)
-    if(Object.prototype.toString.call(sx) === '[object Array]') {
+    if(sx instanceof Array) {
       // we were given a list in sx, assume 1D volume and fill it up
       this.sx = 1;
       this.sy = 1;
@@ -160,7 +152,20 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
       for(var i=0;i<this.depth;i++) {
         this.w[i] = sx[i];
       }
-    } else {
+    }
+    // We want to clone
+    else if (sx instanceof Vol) {
+      this.sx = sx.sx;
+      this.sy = sx.sy;
+      this.depth = sx.depth;
+      var n = this.sx*this.sy*this.depth;
+      // Initializes zero filled typed array
+      // and copies all values to the new w
+      this.w = global.zeros(n);
+      this.w.set(sx.w);
+      this.dw = global.zeros(this.depth);
+    }
+    else {
       // we were given dimensions of the vol
       this.sx = sx;
       this.sy = sy;
@@ -168,7 +173,7 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
       var n = sx*sy*depth;
       this.w = global.zeros(n);
       this.dw = global.zeros(n);
-      if(typeof c === 'undefined') {
+      if(c === undefined) {
         // weight normalization is done to equalize the output
         // variance of every neuron, otherwise neurons with a lot
         // of incoming connections have outputs of larger variance
@@ -176,10 +181,11 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
         for(var i=0;i<n;i++) { 
           this.w[i] = global.randn(0.0, scale);
         }
-      } else {
-        for(var i=0;i<n;i++) { 
-          this.w[i] = c;
-        }
+      }
+      // The weights are already zero filled, so we need to do this
+      // only when using a different constant
+      else if (c !== 0.0) {
+        this.w.fill(c);
       }
     }
   }
@@ -209,16 +215,11 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
       var ix = ((this.sx * y)+x)*this.depth+d;
       this.dw[ix] += v; 
     },
-    cloneAndZero: function() { return new Vol(this.sx, this.sy, this.depth, 0.0)},
-    clone: function() {
-      var V = new Vol(this.sx, this.sy, this.depth, 0.0);
-      var n = this.w.length;
-      for(var i=0;i<n;i++) { V.w[i] = this.w[i]; }
-      return V;
-    },
-    addFrom: function(V) { for(var k=0;k<this.w.length;k++) { this.w[k] += V.w[k]; }},
-    addFromScaled: function(V, a) { for(var k=0;k<this.w.length;k++) { this.w[k] += a*V.w[k]; }},
-    setConst: function(a) { for(var k=0;k<this.w.length;k++) { this.w[k] = a; }},
+    cloneAndZero: function() { return new Vol(this.sx, this.sy, this.depth, 0.0); },
+    clone: function() { return new Vol(this); },
+    addFrom: function(V) { for(var k=0, len=this.w.length;k<len;k++) { this.w[k] += V.w[k]; }},
+    addFromScaled: function(V, a) { for(var k=0, len=this.w.length;k<len;k++) { this.w[k] += a*V.w[k]; }},
+    setConst: function(a) { this.w.fill(a); },
 
     toJSON: function() {
       // todo: we may want to only save d most significant digits to save space
@@ -944,7 +945,7 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
       var x = this.in_act;
       x.dw = global.zeros(x.w.length); // zero out the gradient of input Vol
       var loss = 0.0;
-      if(y instanceof Array || y instanceof Float64Array) {
+      if(y instanceof Float32Array) {
         for(var i=0;i<this.out_depth;i++) {
           var dy = x.w[i] - y[i];
           x.dw[i] = dy;
