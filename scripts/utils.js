@@ -59,9 +59,9 @@ function rgb2vol(data, w, h, mean){
   // hence we need to also convert to BGR order
   for (var y=0; y < h; y++){
     for (var x=0; x < w; x++){
-      vol.set(x, y, 0, data.B[x*w + y] - mean.B);
-      vol.set(x, y, 1, data.G[x*w + y] - mean.G);
-      vol.set(x, y, 2, data.R[x*w + y] - mean.R);
+      vol.set(x, y, 0, data.B[y*h + x] - mean.B);
+      vol.set(x, y, 1, data.G[y*h + x] - mean.G);
+      vol.set(x, y, 2, data.R[y*h + x] - mean.R);
     }
   }
 
@@ -101,3 +101,113 @@ function maxn(arr, n){
 String.prototype.paddingLeft = function (paddingValue) {
    return String(paddingValue + this).slice(-paddingValue.length);
 };
+
+function visualize_layer(elem, layer, scale){
+  scale = scale || 5;
+  var filters = layer.cn.filters;
+
+  for (var i=0,len=filters.length;i<len;i++){
+    draw_activations(elem, filters[i], scale, undefined, layer.name);
+  }
+}
+
+function visualize_activations(elem, model){
+  model.layerIterator(function(layer){
+    draw_activations(elem, layer.cn.out_act, undefined, undefined, layer.name);
+  })
+}
+
+var maxmin = cnnutil.maxmin;
+var f2t = cnnutil.f2t;  
+
+// elt is the element to add all the canvas activation drawings into
+// A is the Vol() to use
+// scale is a multiplier to make the visualizations larger. Make higher for larger pictures
+// if grads is true then gradients are used instead
+var draw_activations = function(elt, A, scale, grads, label) {
+
+  var s = scale || 2; // scale
+  var draw_grads = false;
+  if(typeof(grads) !== 'undefined') draw_grads = grads;
+
+  // get max and min activation to scale the maps automatically
+  var w = draw_grads ? A.dw : A.w;
+  var mm = maxmin(w);
+
+  var A_depth = A.depth;
+  var A_sx = A.sx;
+  var A_sy = A.sy;
+
+  // create the canvas elements, draw and add to DOM
+  for(var d=0;d<A_depth;d++) {
+
+    var canv = document.createElement('canvas');
+    canv.title = label + ' :: ' + d;
+    canv.className = 'actmap';
+    var W = A_sx * s;
+    var H = A_sy * s;
+    canv.width = W;
+    canv.height = H;
+    var ctx = canv.getContext('2d');
+    var g = ctx.createImageData(W, H);
+
+    for(var x=0;x<A_sx;x++) {
+      for(var y=0;y<A_sy;y++) {
+        if(draw_grads) {
+          var dval = Math.floor((A.get_grad(x,y,d)-mm.minv)/mm.dv*255);
+        } else {
+          var dval = Math.floor((A.get(x,y,d)-mm.minv)/mm.dv*255);  
+        }
+        for(var dx=0;dx<s;dx++) {
+          for(var dy=0;dy<s;dy++) {
+            var pp = ((W * (y*s+dy)) + (dx + x*s)) * 4;
+            for(var i=0;i<3;i++) { g.data[pp + i] = dval; } // rgb
+            g.data[pp+3] = 255; // alpha channel
+          }
+        }
+      }
+    }
+    ctx.putImageData(g, 0, 0);
+    elt.appendChild(canv);
+  }  
+}
+
+var draw_activations_COLOR = function(elt, A, scale, grads) {
+
+  var s = scale || 2; // scale
+  var draw_grads = false;
+  if(typeof(grads) !== 'undefined') draw_grads = grads;
+
+  // get max and min activation to scale the maps automatically
+  var w = draw_grads ? A.dw : A.w;
+  var mm = maxmin(w);
+
+  var canv = document.createElement('canvas');
+  canv.className = 'actmap';
+  var W = A.sx * s;
+  var H = A.sy * s;
+  canv.width = W;
+  canv.height = H;
+  var ctx = canv.getContext('2d');
+  var g = ctx.createImageData(W, H);
+  for(var d=0;d<3;d++) {
+    for(var x=0;x<A.sx;x++) {
+      for(var y=0;y<A.sy;y++) {
+        if(draw_grads) {
+          var dval = Math.floor((A.get_grad(x,y,d)-mm.minv)/mm.dv*255);
+        } else {
+          var dval = Math.floor((A.get(x,y,d)-mm.minv)/mm.dv*255);  
+        }
+        for(var dx=0;dx<s;dx++) {
+          for(var dy=0;dy<s;dy++) {
+            var pp = ((W * (y*s+dy)) + (dx + x*s)) * 4;
+            g.data[pp + d] = dval;
+            if(d===0) g.data[pp+3] = 255; // alpha channel
+          }
+        }
+      }
+    }
+  }
+  ctx.putImageData(g, 0, 0);
+  elt.appendChild(canv);
+}

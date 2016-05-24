@@ -429,6 +429,7 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
 
       for(var d=0;d<this.out_depth;d++) {
         var f = this.filters[d];
+        var f_depth = f.depth;
         var x = -this.pad |0;
         var y = -this.pad |0;
         for(var ay=0; ay<this.out_sy; y+=xy_stride,ay++) {  // xy_stride
@@ -442,9 +443,9 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
               for(var fx=0;fx<f.sx;fx++) {
                 var ox = x+fx;
                 if(oy>=0 && oy<V_sy && ox>=0 && ox<V_sx) {
-                  for(var fd=0;fd<f.depth;fd++) {
+                  for(var fd=0;fd<f_depth;fd++) {
                     // avoid function call overhead (x2) for efficiency, compromise modularity :(
-                    a += f.w[((f.sx * fy)+fx)*f.depth+fd] * V.w[((V_sx * oy)+ox)*V.depth+fd];
+                    a += f.w[((f.sx * fy)+fx)*f_depth+fd] * V.w[((V_sx * oy)+ox)*V.depth+fd];
                   }
                 }
               }
@@ -1545,7 +1546,7 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
   var ConcatLayer = function(opt) {
     var opt = opt || {};
 
-    this.axis = opt.axis !== undefined ? opt.axis : 0;
+    this.axis = opt.axis !== undefined ? opt.axis : 1;
 
     // computed
     this.out_sx = opt.in_sx;
@@ -1557,15 +1558,26 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
     forward: function(Vs, is_training) {
       this.in_act = Vs;
       var V2 = new Vol(this.out_sx, this.out_sy, this.out_depth, 0.0);
-      var V2w = V2.w;
-      var start = 0;
-      Vs.forEach(function(V, i){
-        var N = V.w.length;
-        for(var i=start;i<start+N;i++) { 
-          V2w[i] = V.w[i];
+      var offset = 0;
+      if (this.axis === 0) {
+        var V2w = V2.w;
+        for(var j=0; j < Vs.length; j++){
+          V2w.set(Vs[j].w, offset);
+          offset += Vs[j].w.length;
         }
-        start = V.length;
-      })
+      }
+      else {
+        for(var j=0; j < Vs.length; j++){
+          var V = Vs;
+          for (var d=0; d<V.out_depth; d++)
+            for (var x=0; x<V.out_sx; x++) {
+              for (var y=0; y<V.out_sy; y++) {
+                V2.set(x, y, d+j, V.get(x, y, d));
+              }
+            }
+          offset += V.out_depth;
+        }
+      }
       this.out_act = V2;
       return this.out_act;
     },
