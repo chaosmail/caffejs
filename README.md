@@ -6,13 +6,79 @@ This work is pre-alpha and based on ConvNetJS (which is alpha), so you can imagi
 
 ## Running CaffeJS
 
-Please note, that the ConvNetJS library in this repo is a [fork](https://github.com/chaosmail/convnetjs) of the original version.
+> Please note, that the ConvNetJS library in this repo is a [fork](https://github.com/chaosmail/convnetjs) of the original version. It's not updated yet, please be patient.
 
-Clone the repository to your local drive and then start a static webserver in the root directory (run `http-server`) for example. Now you can open the `00_*model.html` samples that load popular deep learning architectures (such as AlexNet, VGG, GoogLeNet, etc.) and analyze their structure. They actually load the Caffe models from `.prototxt` files and convert them on-the-fly to ConvNetJS models.
+Clone the repository to your local drive and then start a static webserver in the root directory (e.g. run `http-server`). Now you can open the `00_*model.html` samples that load popular deep learning architectures (such as AlexNet, VGG, GoogLeNet, etc.) and analyze their structure. They actually load the Caffe models from `.prototxt` files and convert them on-the-fly to ConvNetJS models.
 
-To run a forward pass we need to load some pretrained model weights. You can use the files `weights_to_json.py` and `weights_to_txt.py` to convert `*.caffemodel` files to JSON or TXT weights. Unfortunately, you need to have `Caffe` and `pycaffe` installed (which is a pain). However, I plan to host the ConvNetJS models on Dropbox as soon as I have found an acceptable format.
+To run a forward pass we need to load some pretrained model weights. You can use the files `weights_to_json.py` and `weights_to_txt.py` to convert `*.caffemodel` files to JSON or TXT weights. Unfortunately, you need to have `Caffe` and `pycaffe` installed (which is a pain). However, I plan to host the ConvNetJS models on Dropbox as soon as we have found an acceptable format.
 
-You can as well convert mean files using `python2 convert_protomean.py data/models/VGG_CNN_S/VGG_mean.binaryproto data/models/VGG_CNN_S/VGG_mean.txt` - however I will provide the mean TXT files in the repo.
+You can as well convert mean files using `python2 convert_protomean.py data/models/VGG_CNN_S/VGG_mean.binaryproto data/models/VGG_CNN_S/VGG_mean.txt` - however I will always provide the mean TXT files in the repo.
+
+## Loading the labels
+
+Ỳou can load the ImageNet labels from the data directory, using the following snippet.
+
+```js
+var labels;
+d3.text('data/ilsvrc12/synset_words.txt', function(data){
+  labels = data.split('\n').map(function(d){
+    return d.substr(10);
+  });
+});
+```
+
+## Converting RGB to conventjs.Vol
+
+First make sure you have loaded the proper mean values for your dataset.
+
+```js
+var mean;
+d3.text('data/ilsvrc12/imagenet_mean.txt', function(data){
+  mean = data.split('\n').map(function(d){
+    return d.split(',');
+  });
+});
+```
+
+Now open a stream from your webcam and convert it to convnetjs.Vol
+
+```js
+var cam = new Camera('.camera', width, height);
+
+cam.on('stream', function(data){
+  var input = rgb2vol(data, width, height, mean);
+  
+});
+```
+
+> Please be aware that Caffe uses OpenCV to load the image files, which keeps them in BGR color space (not RGB). The `rgb2vol` method converts your data (extracted from Canvas) into BGR space and subtracts the mean at the same time. 
+
+## Performing a Forward Pass
+
+Finally you can perform a forward pass.
+
+```js
+var input = rgb2vol(data, width, height, mean);
+
+var scores = model.forward(input);
+var topInd = argmaxn(scores.w, n);
+var topVal = maxn(scores.w, n);
+
+// Log the class labels
+for (var i = 0; i < n; i++) { 
+  console.log(format(topVal[i]) + ' ' + labels[topInd[i]]); 
+}
+```
+
+## Iterating over the Layers
+
+CaffeJS implements the layers as a flexible graph structure (with dependencies) like Caffe. To iterate through the layers, please use the CaffeModel.layerIterator() method.
+
+```js
+model.layerIterator(function(layer){
+  // Do some funky stuff
+});
+```
 
 ## What's left to do
 
