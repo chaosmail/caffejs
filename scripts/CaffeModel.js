@@ -1,7 +1,8 @@
 var CaffeModel = (function(cn){
 
-  function CaffeModel(path_, weights){
-    weights = weights === undefined ? true : false;
+  function CaffeModel(path_, weights, csv){
+    weights = weights !== undefined ? weights : true;
+    csv = csv !== undefined ? csv : false;
     var self = this;
     this.name = "";
     this.path = path_;
@@ -9,13 +10,18 @@ var CaffeModel = (function(cn){
     this.edges = [];
     this.dispatch = d3.dispatch('loadModel', 'createModel', 'loadWeights');
 
-    this.dispatch.on('loadModel', function(model){
+    this.dispatch.on('loadModel.caffe', function(model){
       self.create(model);
     });
 
-    this.dispatch.on('createModel', function(){
+    this.dispatch.on('createModel.caffe', function(){
       if (weights) {
-        self.loadWeights();
+        if (csv) {
+          self.loadWeightsCsv();
+        }
+        else {
+          self.loadWeights();
+        }
       }
     });
 
@@ -191,6 +197,7 @@ var CaffeModel = (function(cn){
         return { 
           name: layer.name, output: layer.top, input: layer.bottom, id: i,
           cn: new cn.PoolLayer({
+            pool: pp.pool !== undefined ? pp.pool : 'MAX',
             sx: +pp.kernel_size,
             pad: pp && pp.pad !== undefined ? +pp.pad : 0.0,
             stride: pp && pp.stride !== undefined ? +pp.stride : 1.0,
@@ -265,6 +272,105 @@ var CaffeModel = (function(cn){
     this.updateDims();
 
     this.dispatch.createModel(this);
+  }
+
+  CaffeModel.prototype.loadWeightsCsv = function(cb){
+    // Defer the loads
+    var q = d3_queue.queue();
+    var path_ = this.path; 
+    var SEP = ',';
+    
+    // Load all separate weights for the layers
+    this.layers
+      .filter(function(d){
+        return d.cn && (d.cn.layer_type == 'conv' || d.cn.layer_type == 'fc');
+      })
+      .forEach(function(layer){
+         q.defer(function(callback){
+            d3.text(path_ + '/weights/' + layer.name + '_filter.txt', function(err, weights){
+              if (err) {
+                console.error(err);
+                return;
+              }
+              else {
+                weights = weights.split('\n').map(function(d){
+                  return d.split(SEP);
+                });
+                callback(err, {layer: layer.name, weights: weights, type: 'filter'});
+              }
+            });
+         });
+         q.defer(function(callback){
+            d3.text(path_ + '/weights/' + layer.name + '_bias.txt', function(err, weights){
+              if (err) {
+                console.error(err);
+                return;
+              }
+              else {
+                weights = weights.split(SEP);
+                callback(err, {layer: layer.name, weights: weights, type: 'bias'});
+              }
+            });
+         });
+      });
+
+    q.await((function(err) {
+      if (err) {
+        console.error(err);
+        return;
+      }
+
+      // Transform arguments into array
+      var args = Array.prototype.slice.call(arguments, 1);
+      
+      var weightsFilterMap = d3.map(args.filter(function(d){
+        return d.type === 'filter';
+      }), function(d){
+        return d.layer;
+      });
+
+      var weightsBiasMap = d3.map(args.filter(function(d){
+        return d.type === 'bias';
+      }), function(d){
+        return d.layer;
+      });
+
+      this.layers = this.layers.map(function(layer, i){
+        if (layer.cn && (layer.cn.layer_type == 'conv' || layer.cn.layer_type == 'fc')){
+          // Get the weights for this layer
+          var weightsFilter = weightsFilterMap.get(layer.name).weights;
+          var weightsBias = weightsBiasMap.get(layer.name).weights;
+
+          // Initialize Filters
+          layer.cn.filters = [];
+          for(var i=0;i<layer.cn.out_depth;i++) {
+            layer.cn.filters.push(new convnetjs.Vol(layer.cn.sx || 1, layer.cn.sy || 1, layer.cn.in_depth));
+          }
+
+          // Initialize Biases
+          layer.cn.biases = new convnetjs.Vol(1, 1, layer.cn.out_depth, 0);
+
+          var n = layer.cn.sx * layer.cn.sy * layer.cn.in_depth;
+          
+          console.log(layer.name);
+          console.log(weightsFilter.length, weightsFilter[0].length)
+          console.log(weightsBias.length, weightsBias[0].length)
+
+          for(var i=0; i<layer.cn.out_depth; i++) {
+            // Update Filters
+            for(var j=0;j<n;j++) {
+              layer.cn.filters[i].w[j] = +weightsFilter[i][j];
+            }
+
+            // Update Biases
+            layer.cn.biases[i] = +weightsBias[i];
+          }
+        }
+        return layer;   
+      });
+
+      this.dispatch.loadWeights(this);
+    }).bind(this));
   }
 
   CaffeModel.prototype.loadWeights = function(cb){
@@ -493,7 +599,7 @@ var CaffeModel = (function(cn){
     if(is_training === undefined) {
       is_training = false;
     }
-    var _start, _fstart;
+    var _start;
     if (debug) {
       _start = performance.now();
     }
@@ -511,13 +617,7 @@ var CaffeModel = (function(cn){
       else {
         act = actHistory.get(prev[0].name);
       }
-      if (debug) {
-        _fstart = performance.now();
-      }
       act = layer.cn.forward(act, is_training);  
-      if (debug) {
-        console.info(layer.cn.layer_type + '::' + layer.name + ' in ', performance.now() - _fstart);
-      }    
       actHistory.set(layer.name, act);
     });
 

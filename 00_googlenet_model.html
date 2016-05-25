@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
   <head>
-    <title>ConvNetJS Sample - AlexNet</title>
+    <title>ConvNetJS Sample - GoogLeNet</title>
 
     <script src="node_modules/convnetjs/build/util.js"></script>
     <script src="node_modules/convnetjs/build/vis.js"></script>
@@ -16,8 +16,8 @@
   <body>
     <script language="JavaScript">
 
-      // Let's create a AlexNet model from Caffe
-      var model = new CaffeModel('models/bvlc_alexnet');
+      // Let's create a GoogLeNet model from Caffe
+      var model = new CaffeModel('models/bvlc_googlenet', false);
       
       model.on('createModel', function(){
         model.debugStructure();

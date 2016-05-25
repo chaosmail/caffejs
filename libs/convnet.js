@@ -185,7 +185,8 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
       // The weights are already zero filled, so we need to do this
       // only when using a different constant
       else if (c !== 0.0) {
-        this.w.fill(c);
+        // Note, this is faster than the native .fill() method
+        for(var i=0;i<n;i++) { this.w[i] = c; }
       }
     }
   }
@@ -665,6 +666,8 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
     this.in_sx = opt.in_sx;
     this.in_sy = opt.in_sy;
 
+    this.pool = opt.pool !== undefined ? opt.pool : 'MAX';
+
     // optional
     this.sy = typeof opt.sy !== 'undefined' ? opt.sy : this.sx;
     this.stride = typeof opt.stride !== 'undefined' ? opt.stride : 2;
@@ -686,34 +689,58 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
 
       var A = new Vol(this.out_sx, this.out_sy, this.out_depth, 0.0);
       
-      var n=0; // a counter for switches
-      for(var d=0;d<this.out_depth;d++) {
-        var x = -this.pad;
-        var y = -this.pad;
-        for(var ax=0; ax<this.out_sx; x+=this.stride,ax++) {
-          y = -this.pad;
-          for(var ay=0; ay<this.out_sy; y+=this.stride,ay++) {
+      if (this.pool == 'AVE') {
+        var n=this.sx*this.sy;
+        for(var d=0;d<this.out_depth;d++) {
+          for (var ax = 0; ax < this.out_sx; ax++) {
+            for (var ay = 0; ay < this.out_sy; ay++) {
+              var v = 0.0;
+              var xstart = ax * this.stride - this.pad;
+              var ystart = ay * this.stride - this.pad;
+              var xend = Math.min(xstart + this.sx, this.out_sx + this.pad);
+              var yend = Math.min(ystart + this.sy, this.out_sy + this.pad);
+              var pool_size = (xend - xstart) * (yend - ystart);
 
-            // convolve centered at this particular location
-            var a = -99999; // hopefully small enough ;\
-            var winx=-1,winy=-1;
-            for(var fx=0;fx<this.sx;fx++) {
-              for(var fy=0;fy<this.sy;fy++) {
-                var oy = y+fy;
-                var ox = x+fx;
-                if(oy>=0 && oy<V.sy && ox>=0 && ox<V.sx) {
-                  var v = V.get(ox, oy, d);
-                  // perform max pooling and store pointers to where
-                  // the max came from. This will speed up backprop 
-                  // and can help make nice visualizations in future
-                  if(v > a) { a = v; winx=ox; winy=oy;}
+              for (var x = xstart; x < xend; x++) {
+                for (var y = ystart; y < yend; y++) {
+                  v += V.get(x, y, d);
                 }
               }
+              A.set(ax, ay, d, v / pool_size);
             }
-            this.switchx[n] = winx;
-            this.switchy[n] = winy;
-            n++;
-            A.set(ax, ay, d, a);
+          }
+        }
+      }
+      else {
+        var n=0; // a counter for switches
+        for(var d=0;d<this.out_depth;d++) {
+          var x = -this.pad;
+          var y = -this.pad;
+          for(var ax=0; ax<this.out_sx; x+=this.stride,ax++) {
+            y = -this.pad;
+            for(var ay=0; ay<this.out_sy; y+=this.stride,ay++) {
+
+              // convolve centered at this particular location
+              var a = -99999; // hopefully small enough ;\
+              var winx=-1,winy=-1;
+              for(var fx=0;fx<this.sx;fx++) {
+                for(var fy=0;fy<this.sy;fy++) {
+                  var oy = y+fy;
+                  var ox = x+fx;
+                  if(oy>=0 && oy<V.sy && ox>=0 && ox<V.sx) {
+                    var v = V.get(ox, oy, d);
+                    // perform max pooling and store pointers to where
+                    // the max came from. This will speed up backprop 
+                    // and can help make nice visualizations in future
+                    if(v > a) { a = v; winx=ox; winy=oy;}
+                  }
+                }
+              }
+              this.switchx[n] = winx;
+              this.switchy[n] = winy;
+              n++;
+              A.set(ax, ay, d, a);
+            }
           }
         }
       }
@@ -1568,14 +1595,14 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
       }
       else {
         for(var j=0; j < Vs.length; j++){
-          var V = Vs;
-          for (var d=0; d<V.out_depth; d++)
-            for (var x=0; x<V.out_sx; x++) {
-              for (var y=0; y<V.out_sy; y++) {
-                V2.set(x, y, d+j, V.get(x, y, d));
+          var V = Vs[j];
+          for (var d=0; d<V.depth; d++)
+            for (var x=0; x<V.sx; x++) {
+              for (var y=0; y<V.sy; y++) {
+                V2.set(x, y, d+offset, V.get(x, y, d));
               }
             }
-          offset += V.out_depth;
+          offset += V.depth;
         }
       }
       this.out_act = V2;

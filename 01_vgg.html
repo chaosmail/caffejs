@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
   <head>
-    <title>ConvNetJS Sample</title>
+    <title>ConvNetJS Sample - VGG</title>
 
     <script src="node_modules/convnetjs/build/util.js"></script>
     <script src="node_modules/convnetjs/build/vis.js"></script>
@@ -14,30 +14,10 @@
     <script src="scripts/utils.js"></script>
     <script src="scripts/Camera.js"></script>
     <script src="scripts/CaffeModel.js"></script>
-
-    <style>
-      .net-layer {
-        position: relative;
-        border-bottom: 1px solid #eee;
-        padding-bottom: 10px;
-      }
-
-      .net-vis {
-        margin-left: 200px;
-      }
-
-      .net-description {
-        width: 200px;
-        position: absolute;
-        margin-right: 20px;
-      }
-
-
-    </style>
   </head>
   <body>
-   
-    <div class='camera' style="width:224px; height:224px;"></div>
+
+    <div class='camera' style="width:227px; height:227px;"></div>
 
     <button onclick="cam.snap()" class="take-picture" style="display: none;">Picture</button>
 
@@ -57,17 +37,21 @@
       var cam = new Camera('.camera', width, height);
 
       var labels;
-      d3.text('data/map_clsloc.txt', function(data){
+      d3.text('data/ilsvrc12/synset_words.txt', function(data){
         labels = data.split('\n').map(function(d){
-          return d.split(' ')[2];
+          return d.substr(10);
         });
       });
 
-      // Let's create a GoogLeNet model from Caffe
-      var model = new CaffeModel('models/bvlc_googlenet');
+      var mean;
+      d3.text('models/VGG_CNN_S/VGG_mean.txt', function(data){
+        mean = data.split('\n').map(function(d){
+          return d.split(',');
+        });
+      });
 
-      // the mean value can be found in train_val.prototxt
-      var mean = [104, 117, 123];
+      // Let's create a AlexNet model from Caffe
+      var model = new CaffeModel('models/VGG_CNN_S', true, true);
       
       model.on('loadWeights', function(){
         model.debugStructure();
@@ -86,11 +70,10 @@
         for (var i=0;i<n;i++) {
           console.log(format(topVal[i]) + ' ' + labels[topInd[i]]);
         }
-
-        visualize_activations('.test', model);
       });
 
     </script>
+
 
   </body>
 </html>

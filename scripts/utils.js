@@ -53,15 +53,17 @@ function prototxtToJson(raw, level) {
 }
 
 function rgb2vol(data, w, h, mean){
-  mean = mean || {R:0,G:0,B:0};
+  mean = mean || [0,0,0];
+
   var vol = new convnetjs.Vol(w, h, 3, 0.0);
   // Caffe uses OpenCV to load JPEGs and leaves them in their default BGR order
   // hence we need to also convert to BGR order
+  // Also mean should be provided in this format
   for (var y=0; y < h; y++){
     for (var x=0; x < w; x++){
-      vol.set(x, y, 0, data.B[y*h + x] - mean.B);
-      vol.set(x, y, 1, data.G[y*h + x] - mean.G);
-      vol.set(x, y, 2, data.R[y*h + x] - mean.R);
+      vol.set(x, y, 0, data.B[y*h + x] - (mean[0] instanceof Array ? +mean[0][y*h + x] : +mean[0]));
+      vol.set(x, y, 1, data.G[y*h + x] - (mean[1] instanceof Array ? +mean[1][y*h + x] : +mean[1]));
+      vol.set(x, y, 2, data.R[y*h + x] - (mean[2] instanceof Array ? +mean[2][y*h + x] : +mean[2]));
     }
   }
 
@@ -172,7 +174,7 @@ var draw_activations = function(elt, A, scale, grads, label) {
   }  
 }
 
-var draw_activations_COLOR = function(elt, A, scale, grads) {
+var draw_activations_COLOR = function(elt, A, scale, grads, label) {
 
   var s = scale || 2; // scale
   var draw_grads = false;
@@ -183,6 +185,7 @@ var draw_activations_COLOR = function(elt, A, scale, grads) {
   var mm = maxmin(w);
 
   var canv = document.createElement('canvas');
+  canv.title = label;
   canv.className = 'actmap';
   var W = A.sx * s;
   var H = A.sy * s;
@@ -210,4 +213,64 @@ var draw_activations_COLOR = function(elt, A, scale, grads) {
   }
   ctx.putImageData(g, 0, 0);
   elt.appendChild(canv);
+}
+
+function visualize_activations(selector, model){
+
+  var scale = {
+    224: 1,
+    113: 1,
+    56: 1,
+    28: 1,
+    14: 1,
+    7: 2,
+    1: 12
+  };
+
+  var $elem = d3.select(selector)
+    .attr('class', 'net-network');
+
+  model.layerIterator(function(layer){
+
+    $elem.append('h3')
+      .text("Layer type: " + layer.name);
+    
+    var $div = $elem.append('div')
+      .attr('class', 'net-layer');
+
+    var $info = $div.append('div')
+      .attr('class', 'net-description');
+    
+    var $vis = $div.append('div')
+      .attr('class', 'net-vis');
+
+    var $weights = $vis.append('div')
+      .attr('class', 'net-weights');
+
+    var $activations = $vis.append('div')
+      .attr('class', 'net-activations');
+    $info.append('span')
+      .text(layer.cn.layer_type);
+
+    // if (layer.cn.layer_type === 'conv'){
+    //   if (layer.cn.in_depth === 3) {
+    //     for (var d=0; d<layer.cn.filters.length;d++){
+    //       draw_activations_COLOR($weights[0][0], layer.cn.filters[d], scale[layer.cn.sx], undefined, layer.name + "::" + d);
+    //     }
+    //   }
+    //   else {
+    //     for (var d=0; d<layer.cn.filters.length;d++){
+    //       draw_activations($weights[0][0], layer.cn.filters[d], scale[layer.cn.sx], undefined, layer.name + "::" + d);
+    //     }
+    //     $weights.append('br')
+    //   }
+    // }
+
+    if (layer.name == 'data') {
+      draw_activations_COLOR($activations[0][0], layer.cn.out_act, scale[layer.cn.out_act.sx], undefined, layer.name);
+    }
+    else {
+      draw_activations($activations[0][0], layer.cn.out_act, scale[layer.cn.out_act.sx], undefined, layer.name);
+    }
+  })
 }
