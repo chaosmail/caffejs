@@ -75,7 +75,7 @@ for (var i = 0; i < n; i++) {
 CaffeJS implements the layers as a flexible graph structure (with dependencies) like Caffe. To iterate through the layers, please use the CaffeModel.layerIterator() method.
 
 ```js
-model.layerIterator(function(layer){
+model.layerIterator(function(layer, i, parents){
   // Do some funky stuff
 });
 ```

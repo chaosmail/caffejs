@@ -17,7 +17,7 @@
     <script language="JavaScript">
 
       // Let's create a VGG CNN S model from Caffe
-      var model = new CaffeModel('models/VGG_CNN_S');
+      var model = new CaffeModel('models/VGG_CNN_S', false);
       
       model.on('createModel', function(){
         model.debugStructure();

@@ -254,7 +254,9 @@ var CaffeModel = (function(cn){
     // Create Input layer manually
     if (json.input == 'data') {
       this.layers.push({name: 'data', cn: new cn.InputLayer({
-          out_depth: +json.input_dim[1], out_sx: +json.input_dim[2], out_sy:+json.input_dim[3],
+          out_depth: +json.input_dim[1],
+          out_sx: +json.input_dim[2],
+          out_sy:+json.input_dim[3],
         })
       });
     }
@@ -446,39 +448,83 @@ var CaffeModel = (function(cn){
     });
   }
 
-  CaffeModel.prototype.layerIterator = function(iteratorFn) {
-    var max_iter = 1000000;
-    var m = this.layerMap();
-    var layer = m.get('data');
+  /**
+   * Traverses the network graph and calls iteratorFn on
+   * each layer, automatically handles layer dependencies
+   * @param  {LayerIteratorCallback} iteratorFn - Function called for every layer
+   * @param  {Object} params - Parameters for the iterator
+   * @param  {String} params.start - Layer name where the traversal should be started
+   * @param  {String} params.end - Layer name where the traversal should be stopped
+   * @param  {Boolean} params.reverse - Travers the graph backwards if set to true
+   * @return undefined
+   *
+   * @example <caption>Forward Traversal</caption>
+   * var model = new CaffeModel('models/bvlc_googlenet');
+   *
+   * model.layerIterator(function(layer, i, parents){
+   *    // do something cool with layer
+   *    console.log(layer.name);
+   * });
+   *
+   * * @example <caption>Backward Traversal</caption>
+   * var model = new CaffeModel('models/bvlc_googlenet');
+   *
+   * model.layerIterator(function(layer, i, parents){
+   *    // do something cool with layer
+   *    console.log(layer.name);
+   * }, {
+   *   reverse: true
+   * });
+   */
+  CaffeModel.prototype.layerIterator = function(iteratorFn, params) {
+    params = params || {};
     
+    var layerMap = this.layerMap();
+    var layerStack = [];
+    var i = 0;
+
+    // Store the visited nodes
     var visited = d3.set();
+
+    // Forward traversal
+    if (!params.reverse) {
+      // Define the current layer
+      var layer = params.start ? layerMap.get(params.start) : this.layers[0];
+      var edges = this.edges;
+    }
+    // Backward traversal
+    else {
+      // Define the current layer
+      var layer = params.start ? layerMap.get(params.start) : this.layers[this.layers.length - 1];
+      var edges = this.edges.map(function(d){
+        return {from: d.to, to: d.from};
+      });
+    }
+
+    // Aggregate all edges by the from property
+    // Reverse edge directions
     var edgesFrom = d3.map(
       d3.nest()
         .key(function(d){ return d.from; })
-        .entries(this.edges),
+        .entries(edges),
       function(d){
         return d.key;
       });
 
+    // Aggregate all edges by the to property
+    // Reverse edge directions
     var edgesTo = d3.map(
       d3.nest()
         .key(function(d){ return d.to; })
-        .entries(this.edges),
+        .entries(edges),
       function(d){
         return d.key;
       });
 
-    var layerStack = [];
-    var i = 0;
+    // Start with the first layer
     layerStack.push(layer);
 
     while (layerStack.length) {
-      // Avoid endless loops
-      if (i >= max_iter) {
-        console.error('Reached maximum number of iterations');
-        return;
-      }
-
       // Take a layer from the stack
       var layer = layerStack.pop();
       
@@ -486,49 +532,56 @@ var CaffeModel = (function(cn){
       visited.add(layer.name);
 
       // Collect the previous Layers
-      var prev = undefined;
-      var edgesToLayer = edgesTo.get(layer.name);
-      if (edgesToLayer) {
-        prev = edgesToLayer.values.map(function(d){
-          return m.get(d.from);
+      var parentKeys = edgesTo.get(layer.name);
+      var parents = parentKeys === undefined ? undefined
+        : parentKeys.values.map(function(d){
+          return layerMap.get(d.from);
         });
-      }
 
       // Call the iterator callback
-      iteratorFn(layer, i, prev);
+      iteratorFn(layer, i++, parents);
       
-      i += 1;
+      // Check if we reached the end layer
+      if (params.end && layer.name === params.end) {
+        break;
+      }
 
-      // Get all connections from this layer
-      var edgesFromLayer = edgesFrom.get(layer.name);
-      if (edgesFromLayer) {
-        edgesFromLayer.values.forEach(function(d){
-          if (!visited.has(d.to)) {
-            // Add only if all previous edges have been
-            // already visited
-            var can_add = true;
-
-            // Get all edges to this layer
-            var edgesToChild = edgesTo.get(d.to);
-            if (edgesToChild) {
-              edgesToChild.values.forEach(function(d){
-                if (!visited.has(d.from)) {
-                  // There is still an unvisited connection
-                  // which needs to be resolved first
-                  can_add = false;
-                }
+      // Get all children for this layer
+      var childrenKeys = edgesFrom.get(layer.name);
+      if (childrenKeys) {
+        childrenKeys.values
+          .filter(function(d){
+            // Only check adjacent nodes that have
+            // not been visited yet
+            return !visited.has(d.to);
+          })
+          .forEach(function(d){
+            // Check if there are still any unvisited parents
+            // of the next child which need to be visited first
+            var parentKeysOfChild = edgesTo.get(d.to);
+            var unvisitedParents = parentKeysOfChild === undefined ? []
+              : parentKeysOfChild.values.filter(function(d){
+                return !visited.has(d.from);
               });
-            }
 
-            if (can_add) {
+            // All previous parents have been visited
+            if (unvisitedParents.length === 0) {
               // Add the layer to the stack
-              layerStack.push(m.get(d.to));
+              layerStack.push(layerMap.get(d.to));
             }
-          }
-        });
+          });
       }
     }
   }
+
+  /**
+   * Called on every layer of the network graph
+   * @callback LayerIteratorCallback
+   * @param {Layer} layer - Current layer of the network
+   * @param {Integer} i - Index of the layer in the traversal
+   * @param {Layer[]} parents - Array of parent layers
+   * @returns undefined
+   */
 
   CaffeModel.prototype.debugStructure = function(){
     var numParams = 0;
