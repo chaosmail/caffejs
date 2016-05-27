@@ -36,6 +36,11 @@ var CaffeModel = (function(cn){
     return d3.map(this.layers, function(d){ return d.name; });
   }
 
+  CaffeModel.prototype.getLayer = function(layer_name) {
+    var layerMap = this.layerMap();
+    return layerMap.get(layer_name);
+  }
+
   CaffeModel.prototype.createEdges = function() {
     var self = this;
     this.edges = [];
@@ -74,6 +79,14 @@ var CaffeModel = (function(cn){
           }
         });
       });
+  }
+
+  CaffeModel.prototype.setInputDims = function(width, height){
+    this.layers[0].cn.in_sx = width;
+    this.layers[0].cn.in_sy = height;
+    this.layers[0].cn.out_sx = this.layers[0].cn.in_sx;
+    this.layers[0].cn.out_sy = this.layers[0].cn.in_sy;
+    this.updateDims();
   }
 
   CaffeModel.prototype.updateDims = function() {
@@ -648,37 +661,49 @@ var CaffeModel = (function(cn){
   // forward prop the network. 
   // The trainer class passes is_training = true, but when this function is
   // called from outside (not from the trainer), it defaults to prediction mode
-  CaffeModel.prototype.forward = function(V, is_training, debug) {
-    if(is_training === undefined) {
-      is_training = false;
-    }
-    var _start;
-    if (debug) {
-      _start = performance.now();
-    }
-    var actHistory = d3.map();
-    var act;
-    this.layerIterator(function(layer, i, prev){  
-      if (prev === undefined) {
-        act = V;
+  CaffeModel.prototype.forward = function(V, is_training, params) {
+    is_training = is_training === undefined ? false : true;
+    params = params || {};
+    var activationMap = d3.map();
+    var currentActivation;
+    this.layerIterator(function(layer, i, parents){  
+      if (parents === undefined) {
+        currentActivation = V;
       }
-      else if (prev.length > 1) {
-        act = prev.map(function(d){
-          return actHistory.get(d.name);
+      else if (parents.length > 1) {
+        currentActivation = parents.map(function(d){
+          return activationMap.get(d.name);
         });
       }
       else {
-        act = actHistory.get(prev[0].name);
+        currentActivation = activationMap.get(parents[0].name);
       }
-      act = layer.cn.forward(act, is_training);  
-      actHistory.set(layer.name, act);
-    });
+      currentActivation = layer.cn.forward(currentActivation, is_training);  
+      activationMap.set(layer.name, currentActivation);
+    }, params);
 
-    if (debug) {
-      console.info('Forward pass in ', performance.now() - _start)
-    }
+    return currentActivation;
+  }
 
-    return act;
+  // backprop: compute gradients wrt all parameters
+  CaffeModel.prototype.backward = function(y, params) {
+    params = params || {};
+    params.reverse = true;
+
+    var loss;
+
+    this.layerIterator(function(layer, i, parents){  
+      if (y !== undefined && i === 0) {
+        // last layer assumed to be loss layer
+        loss = layer.cn.backward(y);
+      }
+      else {
+        // backprop to all other layers
+        layer.cn.backward();
+      }
+    }, params);
+
+    return loss;
   }
 
   return CaffeModel;

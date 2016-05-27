@@ -11,7 +11,7 @@ sys.path.insert(0, caffe_root + 'python')
 
 import caffe
 
-model = "bvlc_googlenet"
+model = "caffejs_deepdream"
 
 # Set the right path to your model definition file, pretrained model weights,
 # and the image you would like to classify.

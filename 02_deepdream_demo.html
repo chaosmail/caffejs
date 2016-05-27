@@ -1,0 +1,87 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>ConvNetJS Sample - DeepDream in the Browser</title>
+
+    <script src="scripts/utils.js"></script>
+  </head>
+  <body>
+
+    <canvas id="image"></canvas>
+    <br>
+    <button onclick="init()">Restart</button>
+    <button onclick="cancel()">Stop</button>
+
+    <script>
+      // We use this canvas and image
+      var imgUrl = "data/deepdream/sky.jpg";
+      var canvas = document.getElementById('image');
+      var params = {iter_n:10, octave_n:4, end:'inception_4a/output'};
+      var image, worker;
+
+      init();
+
+      function init() {
+        // Create a WebWorker with the URL to the worker code
+        console.log('Loading DeepDream in webworker');
+
+        worker = new Worker('scripts/deepdream_worker.js');
+        
+        // Messages from Web Worker
+        worker.onmessage = function(e){
+        
+          switch (e.data.name) {
+
+            case 'model-loaded':
+              console.log('Finished loading GoogLeNet')
+              load();
+              break;
+
+            case 'dream-progress':
+              console.log('Running iteration ' + e.data.iteration + ' of octave ' + e.data.octave);
+              updateImg(canvas, e.data.output, e.data.width, e.data.height);
+              break;
+            
+            case 'dream-finished':
+            default:
+              updateImg(canvas, e.data.output, e.data.width, e.data.height);
+              break;
+          }
+        }
+
+        // For debugging
+        worker.onerror = function(event){
+          throw new Error(event.message + " (" + event.filename + ":" + event.lineno + ")");
+        }
+      }
+
+      function load() {
+        loadImg(canvas, imgUrl).then(function(img){
+          updateImg(canvas, img.data, img.width, img.height);
+          
+          image = img;
+          start();
+        });
+      }
+
+      function start() {
+        console.log(
+          'Starting DeepDream with ' + params.iter_n + ' iterations and ' + 
+            params.octave_n + ' octaves until layer ' + params.end
+        );
+
+        worker.postMessage({
+          input: image,
+          params: params,
+        });
+      }
+
+      function cancel(){
+        console.log('Stopped WebWorker');
+        worker.terminate();
+      }
+
+    </script>
+
+  </body>
+</html>

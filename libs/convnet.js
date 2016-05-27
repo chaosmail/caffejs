@@ -22,11 +22,111 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
   var randf = function(a, b) { return Math.random()*(b-a)+a; }
   var randi = function(a, b) { return Math.floor(Math.random()*(b-a)+a); }
   var randn = function(mu, std){ return mu+gaussRandom()*std; }
+  var clip = function(value, min, max) { return Math.max(Math.min(value, max), min); }
 
-  // Array utilities
+  /**
+   * Computes a % b also for negative numbers
+   * @param  {Number} a
+   * @param  {Number} b
+   * @return {Number} a % b
+   * @src http://stackoverflow.com/a/4467559/5200303
+   */
+  var mod = function(a, b) { return ((a%b)+b)%b; }
+
+  // ****************************************************************************
+  // *                              Array utilities                             *
+  // ****************************************************************************
+
   var zeros = function(n) {
     if(typeof(n)==='undefined' || isNaN(n)) { return []; }
     return new Float32Array(n);
+  }
+
+  var prod = function (A){
+    var prev = 1.0;
+    for (var i=0,len=A.length;i<len;++i) prev *= A[i];
+    return prev;
+  }
+
+  var sum = function (A){
+    var prev = 1.0;
+    for (var i=0,len=A.length;i<len;++i) prev *= A[i];
+    return prev;
+  }
+
+  var fill = function (A, b){
+    for (var i=0,len=A.length;i<len;++i) A[i] = b;
+    return A;
+  }
+
+  var add = function (A, B){
+    if (A.length === B.length) {
+      for (var i=0,len=A.length;i<len;++i) A[i] += B[i];
+      return A;
+    } 
+    else {
+      throw "Bad input shape";
+    }
+  }
+
+  var addConst = function (A, b){
+    for (var i=0,len=A.length;i<len;++i) A[i] += B[i];
+    return A;
+  }
+
+  var sub = function (A, B){
+    if (A.length === B.length) {
+      for (var i=0,len=A.length;i<len;++i) A[i] -= B[i];
+      return A;
+    } 
+    else {
+      throw "Bad input shape";
+    }
+  }
+
+  var subConst = function (A, b){
+    for (var i=0,len=A.length;i<len;++i) A[i] -= b;
+    return A;
+  }
+
+  var mul = function (A, B){
+    if (A.length === B.length) {
+      for (var i=0,len=A.length;i<len;++i) A[i] *= B[i];
+      return A;
+    } 
+    else {
+      throw "Bad input shape";
+    }
+  }
+
+  var mulByConst = function (A, b){
+    for (var i=0,len=A.length;i<len;++i) A[i] *= b;
+    return A;
+  }
+
+  var div = function (A, B){
+    if (A.length === B.length) {
+      for (var i=0,len=A.length;i<len;++i) A[i] /= B[i];
+      return A;
+    } 
+    else {
+      throw "Bad input shape";
+    }
+  }
+
+  var divByConst = function (A, b){  
+    for (var i=0,len=A.length;i<len;++i) A[i] /= b;
+    return A;
+  }
+
+  var addScaled = function (A, B, c){
+    if (A.length === B.length) {
+      for (var i=0,len=A.length;i<len;++i) A[i] += c*B[i];
+      return A;
+    } 
+    else {
+      throw "Bad input shape";
+    }
   }
 
   var arrContains = function(arr, elt) {
@@ -44,6 +144,45 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
       }
     }
     return b;
+  }
+
+  var max = function (A){
+    var max_ = Number.NEGATIVE_INFINITY;
+    for (var i=0,len=A.length;i<len;++i){
+      if (A[i] > max_) {
+        max_ = A[i];
+      }
+    }
+    return max_;
+  }
+
+  var argmax = function (A){
+    var max_ = Number.NEGATIVE_INFINITY;
+    var idx = 0;
+    for (var i=0,len=A.length;i<len;++i){
+      if (A[i] > max_) {
+        max_ = A[i];
+        idx = i;
+      }
+    }
+    return idx;
+  }
+
+  var maxn = function (A, n){
+    n = n || 3;
+    return A.sort(function(a, b){
+      return b - a;
+    }).slice(0, n);
+  }
+
+  var argmaxn = function (A, n){
+    n = n || 3;
+    var len = A.length;
+    var indices = new Uint32Array(len);
+    for (var i = 0; i < len; ++i) indices[i] = i;
+    return indices.sort(function(a, b){
+      return A[b] - A[a];
+    }).slice(0, n);
   }
 
   // return max and min of a given non-empty array.
@@ -119,6 +258,24 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
   global.randf = randf;
   global.randi = randi;
   global.randn = randn;
+  global.fill = fill;
+  global.sum = sum;
+  global.prod = prod;
+  global.add = add;
+  global.addConst = addConst;
+  global.sub = sub;
+  global.subConst = subConst;
+  global.mul = mul;
+  global.mulByConst = mulByConst;
+  global.div = div;
+  global.divByConst = divByConst;
+  global.addScaled = addScaled;
+  global.mod = mod;
+  global.clip = clip;
+  global.max = max;
+  global.argmax = argmax;
+  global.maxn = maxn;
+  global.argmaxn = argmaxn;
   global.zeros = zeros;
   global.maxmin = maxmin;
   global.randperm = randperm;
@@ -163,7 +320,7 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
       // and copies all values to the new w
       this.w = global.zeros(n);
       this.w.set(sx.w);
-      this.dw = global.zeros(this.depth);
+      this.dw = global.zeros(n);
     }
     else {
       // we were given dimensions of the vol
@@ -192,18 +349,44 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
   }
 
   Vol.prototype = {
+
+    // ****************************************************************************
+    // *                               Data members                               *
+    // ****************************************************************************
+
     get: function(x, y, d) { 
       var ix=((this.sx * y)+x)*this.depth+d;
       return this.w[ix];
     },
     set: function(x, y, d, v) { 
       var ix=((this.sx * y)+x)*this.depth+d;
-      this.w[ix] = v; 
+      this.w[ix] = v;
     },
     add: function(x, y, d, v) { 
       var ix=((this.sx * y)+x)*this.depth+d;
-      this.w[ix] += v; 
+      this.w[ix] += v;
+      return this;
     },
+    sub: function(x, y, d, v) { 
+      var ix=((this.sx * y)+x)*this.depth+d;
+      this.w[ix] -= v;
+      return this;
+    },
+    mul: function(x, y, d, v) { 
+      var ix=((this.sx * y)+x)*this.depth+d;
+      this.w[ix] *= v;
+      return this;
+    },
+    div: function(x, y, d, v) { 
+      var ix=((this.sx * y)+x)*this.depth+d;
+      this.w[ix] /= v;
+      return this;
+    },
+
+    // ****************************************************************************
+    // *                             Gradient members                             *
+    // ****************************************************************************
+
     get_grad: function(x, y, d) { 
       var ix = ((this.sx * y)+x)*this.depth+d;
       return this.dw[ix]; 
@@ -216,11 +399,89 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
       var ix = ((this.sx * y)+x)*this.depth+d;
       this.dw[ix] += v; 
     },
-    cloneAndZero: function() { return new Vol(this.sx, this.sy, this.depth, 0.0); },
+    sub_grad: function(x, y, d, v) { 
+      var ix = ((this.sx * y)+x)*this.depth+d;
+      this.dw[ix] -= v; 
+    },
+    mul_grad: function(x, y, d, v) { 
+      var ix = ((this.sx * y)+x)*this.depth+d;
+      this.dw[ix] *= v; 
+    },
+    div_grad: function(x, y, d, v) { 
+      var ix = ((this.sx * y)+x)*this.depth+d;
+      this.dw[ix] /= v; 
+    },
+    cloneAndZero: function() {
+      return new Vol(this.sx, this.sy, this.depth, 0.0);
+    },
+    
     clone: function() { return new Vol(this); },
-    addFrom: function(V) { for(var k=0, len=this.w.length;k<len;k++) { this.w[k] += V.w[k]; }},
-    addFromScaled: function(V, a) { for(var k=0, len=this.w.length;k<len;k++) { this.w[k] += a*V.w[k]; }},
-    setConst: function(a) { this.w.fill(a); },
+    
+    addFrom: function(V) { 
+      this.w = global.add(this.w, V.w);
+      return this;
+    },
+    
+    addFromScaled: function(V, a) {
+      this.w = global.addScaled(this.w, V.w, a);
+      return this;
+    },
+
+    setConst: function(a) {
+      // Note: Loops are faster than TypedArray.fill()
+      this.w = global.fill(this.w, a);
+      return this;
+    },
+
+    roll: function(ox, oy, od) {
+      ox = ox || 0;
+      oy = oy || 0;
+      od = od || 0;
+      var V2 = this.clone();
+      for (var d=0; d<V2.depth; d++) {
+        for (var x=0; x<V2.sx; x++) {
+          for (var y=0; y<V2.sy; y++) {
+            var dval = this.get(global.mod((x + ox), this.sx), global.mod((y + oy), this.sy), global.mod((d + od), this.depth));
+            V2.set(x, y, d, dval);
+          }
+        }
+      }
+      return V2;
+    },
+
+    zoom: function(zx, zy, zd) {
+      zx = zx || 1;
+      zy = zy || 1;
+      zd = zd || 1;
+      var V2 = new Vol(Math.round(this.sx*zx), Math.round(this.sy*zy), Math.round(this.depth*zd), 0.0);
+      for (var d=0; d<V2.depth; d++) {
+        for (var x=0; x<V2.sx; x++) {
+          for (var y=0; y<V2.sy; y++) {
+            var n = 0;
+            var ox = Math.ceil(1.0/zx);
+            var oy = Math.ceil(1.0/zy);
+            var od = Math.ceil(1.0/zd);
+            var startx = Math.ceil(x/zx);
+            var starty = Math.ceil(y/zy);
+            var startd = Math.ceil(d/zd);
+            var endx = Math.min(startx + ox, this.sx);
+            var endy = Math.min(starty + oy, this.sy);
+            var endd = Math.min(startd + od, this.depth);
+            for (var dx = startx; dx < endx; dx++) {
+              for (var dy = starty; dy < endy; dy++) {
+                for (var dd = startd; dd < endd; dd++) {
+                  var dval = this.get(global.mod(dx, this.sx), global.mod(dy, this.sy), global.mod(dd, this.depth));
+                  V2.add(x, y, d, dval);
+                  n++;
+                }
+              }
+            }
+            V2.div(x, y, d, n);
+          }
+        }
+      }
+      return V2;
+    },
 
     toJSON: function() {
       // todo: we may want to only save d most significant digits to save space
@@ -430,7 +691,6 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
 
       for(var d=0;d<this.out_depth;d++) {
         var f = this.filters[d];
-        var f_depth = f.depth;
         var x = -this.pad |0;
         var y = -this.pad |0;
         for(var ay=0; ay<this.out_sy; y+=xy_stride,ay++) {  // xy_stride
@@ -444,9 +704,9 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
               for(var fx=0;fx<f.sx;fx++) {
                 var ox = x+fx;
                 if(oy>=0 && oy<V_sy && ox>=0 && ox<V_sx) {
-                  for(var fd=0;fd<f_depth;fd++) {
+                  for(var fd=0;fd<f.depth;fd++) {
                     // avoid function call overhead (x2) for efficiency, compromise modularity :(
-                    a += f.w[((f.sx * fy)+fx)*f_depth+fd] * V.w[((V_sx * oy)+ox)*V.depth+fd];
+                    a += f.w[((f.sx * fy)+fx)*f.depth+fd] * V.w[((V_sx * oy)+ox)*V.depth+fd];
                   }
                 }
               }
@@ -689,7 +949,7 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
 
       var A = new Vol(this.out_sx, this.out_sy, this.out_depth, 0.0);
       
-      if (this.pool == 'AVE') {
+      if (this.pool === 'AVE') {
         var n=this.sx*this.sy;
         for(var d=0;d<this.out_depth;d++) {
           for (var ax = 0; ax < this.out_sx; ax++) {
@@ -700,7 +960,7 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
               var xend = Math.min(xstart + this.sx, this.out_sx + this.pad);
               var yend = Math.min(ystart + this.sy, this.out_sy + this.pad);
               var pool_size = (xend - xstart) * (yend - ystart);
-
+              // perform average pooling
               for (var x = xstart; x < xend; x++) {
                 for (var y = ystart; y < yend; y++) {
                   v += V.get(x, y, d);
@@ -757,15 +1017,12 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
       var n = 0;
       for(var d=0;d<this.out_depth;d++) {
         var x = -this.pad;
-        var y = -this.pad;
         for(var ax=0; ax<this.out_sx; x+=this.stride,ax++) {
-          y = -this.pad;
+          var y = -this.pad;
           for(var ay=0; ay<this.out_sy; y+=this.stride,ay++) {
-
             var chain_grad = this.out_act.get_grad(ax,ay,d);
             V.add_grad(this.switchx[n], this.switchy[n], d, chain_grad);
             n++;
-
           }
         }
       }
@@ -1586,7 +1843,7 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
       this.in_act = Vs;
       var V2 = new Vol(this.out_sx, this.out_sy, this.out_depth, 0.0);
       var offset = 0;
-      if (this.axis === 0) {
+        if (this.axis === 0) {
         var V2w = V2.w;
         for(var j=0; j < Vs.length; j++){
           V2w.set(Vs[j].w, offset);
@@ -1609,14 +1866,29 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
       return this.out_act;
     },
     backward: function() {
-      // var V = this.in_act; // we need to set dw of this
-      // var V2 = this.out_act;
-      // var N = V.w.length;
-      // V.dw = global.zeros(N); // zero out gradient wrt data
-      // for(var i=0;i<N;i++) {
-      //   if(V2.w[i] <= 0) V.dw[i] = 0; // threshold
-      //   else V.dw[i] = V2.dw[i];
-      // }
+      var Vs = this.in_act; // we need to set dw of these
+      var V2 = this.out_act;
+      var offset = 0;
+      if (this.axis === 0) {
+        var V2dw = V2.dw;
+        for(var j=0; j < Vs.length; j++){
+          var Vdw = Vs[j].dw;
+          V2dw.set(Vdw, offset);
+          offset += Vdw.length;
+        }
+      }
+      else {
+        for(var j=0; j < Vs.length; j++){
+          var V = Vs[j];
+          for (var d=0; d<V.depth; d++)
+            for (var x=0; x<V.sx; x++) {
+              for (var y=0; y<V.sy; y++) {
+                V.set_grad(x, y, d, V2.get_grad(x, y, d+offset));
+              }
+            }
+          offset += V.depth;
+        }
+      }
     },
     getParamsAndGrads: function() {
       return [];
@@ -2309,7 +2581,12 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
 (function(lib) {
   "use strict";
   if (typeof module === "undefined" || typeof module.exports === "undefined") {
-    window.convnetjs = lib; // in ordinary browser attach library to window
+  	if (window !== undefined){
+    	window.convnetjs = lib; // in ordinary browser attach library to window
+  	}
+  	else {
+  		self.convnetjs = lib;
+  	}
   } else {
     module.exports = lib; // in nodejs
   }

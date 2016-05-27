@@ -20,6 +20,11 @@
       var model = new CaffeModel('models/bvlc_googlenet', false);
       
       model.on('createModel', function(){
+        // model.layerIterator(function(layer){
+        //   console.log(layer.name);
+
+        // }, {reverse: true, start: 'inception_5a/output'});
+
         model.debugStructure();
       });
 
