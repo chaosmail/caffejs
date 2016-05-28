@@ -31,8 +31,6 @@
         position: absolute;
         margin-right: 20px;
       }
-
-
     </style>
   </head>
   <body>
@@ -75,19 +73,19 @@
           .style('display', 'block');
       });
 
-      cam.on('stream', function(data){
-        var input = rgb2vol(data, width, height, mean);
+      cam.on('stream', function(img){
+        var input = rgb2vol(img, mean);
         console.log(input);
 
         var scores = model.forward(input);
-        var topInd = argmaxn(scores.w, n);
-        var topVal = maxn(scores.w, n);
+        var topInd = convnetjs.argmaxn(scores.w, n);
+        var topVal = convnetjs.maxn(scores.w, n);
 
         for (var i=0;i<n;i++) {
           console.log(format(topVal[i]) + ' ' + labels[topInd[i]]);
         }
 
-        visualize_activations('.test', model);
+        //visualize_activations('.test', model);
       });
 
     </script>

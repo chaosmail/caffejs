@@ -134,7 +134,8 @@ function deepdream(net, vol, params) {
     }
 
     // extract details produced on the current octave
-    detail.w = convnetjs.sub(vol.clone().w, octave_base.w);
+    detail = vol.clone()
+    detail.w = convnetjs.sub(detail.w, octave_base.w);
   }
 
   // returning the resulting image

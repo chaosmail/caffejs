@@ -19,24 +19,9 @@ var Camera = (function Camera(){
     Webcam.snap((function(data_uri, canvas, ctx) {
       // Read the data from the canvas object
       var img = ctx.getImageData(0, 0, this.width, this.height);
-      
-      // Extract the data
-      var data = {};
-      data.R = img.data.filter(function(d, i){
-        return i % 4 === 0;
-      });
-      data.G = img.data.filter(function(d, i){
-        return i % 4 === 1;
-      });
-      data.B = img.data.filter(function(d, i){
-        return i % 4 === 2;
-      });
-      data.A = img.data.filter(function(d, i){
-        return i % 4 === 3;
-      });
 
       // Dispatch the event
-      this.dispatch.stream(data);
+      this.dispatch.stream(img);
 
       if (this.runnnig) {
         this.performStream();

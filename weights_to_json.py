@@ -41,15 +41,18 @@ for key in net.params:
 	print("Expected Shape: ", nb_filter, stack_size, nb_col, nb_row)	
 	print("Found Shape: ", np.array(blobs[0].data).shape)
 
-	weights_p = np.array(blobs[0].data).reshape((nb_filter, stack_size*nb_col*nb_row))
-	weights_b = np.array(blobs[1].data)
+	weights_p = blobs[0].data.astype(dtype=np.float32)
+	weights_b = blobs[1].data.astype(dtype=np.float32)
 
-	# weights_p = np.around(weights_p, decimals=3)
-	# weights_b = np.around(weights_b, decimals=3)
+	# Caffe uses the shape f, (d, y, x)
+	# ConvnetJS uses the shape f, (y, x, d)
+	weights_p = np.swapaxes(np.swapaxes(weights_p, 3, 1), 2, 1)
+
+	print("Converted to Shape: ", weights_p.shape)
 
 	weights = {
-		'filter': weights_p.astype(dtype=np.float32).tolist(),
-		'bias': weights_b.astype(dtype=np.float32).tolist()
+		'filter': weights_p.reshape((nb_filter, stack_size*nb_col*nb_row)).tolist(),
+		'bias': weights_b.tolist()
 	}
 
 	filename = WEIGHTS_DIR + key + '.json'
