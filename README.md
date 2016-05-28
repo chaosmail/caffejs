@@ -72,14 +72,22 @@ for (var i = 0; i < n; i++) {
 }
 ```
 
-### Iterating over the Layers
+### Navigation through the Network
 
-CaffeJS implements the layers as a flexible graph structure (with dependencies) like Caffe. To iterate through the layers, please use the CaffeModel.layerIterator() method.
+CaffeJS implements the layers as a flexible graph structure (with dependencies) like Caffe. To iterate through the layers, please use the `CaffeModel.layerIterator()` method.
 
 ```js
 model.layerIterator(function(layer, i, parents){
   // Do some funky stuff
 });
+```
+
+To return a single layer of the network you can use the `CaffeModel.getLayer()` method.
+
+```js
+var layerName = 'inception_4c/output';
+
+model.getLayer(layerName)
 ```
 
 ## Samples
@@ -98,7 +106,7 @@ This is a demo that uses the pretrained GoogLeNet from Caffe to perform classifi
 
 This is a cool demo that runs the famous [DeepDream](https://github.com/google/deepdream/blob/master/dream.ipynb) demo entirely in your browser. It uses the pretrained GoogLeNet from Caffe and runs the computation as webworker.
 
-> Debugging this demo: Go to the `Sources` panel in the Chrome Developer Tools and load the demo. You should see a webworker icon entitled with `deepdream_worker.js`. You can click on it and set your breakpoints as usual. Additionally, you could enable `DevTools for Services Works` in the `Resources` panel.
+> Debugging this demo: Go to the `Sources` panel in the Chrome Developer Tools and load the demo. You should see a webworker icon entitled with `deepdream_worker.js`. You can click on it and set your breakpoints as usual. Additionally, you could enable `DevTools for Services Workers` in the `Resources` panel.
 
 ## What's left to do
 
