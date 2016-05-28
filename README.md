@@ -74,7 +74,7 @@ for (var i = 0; i < n; i++) {
 
 ### Navigation through the Network
 
-CaffeJS implements the layers as a flexible graph structure (with dependencies) like Caffe. To iterate through the layers, please use the `CaffeModel.layerIterator()` method.
+Unlike ConvNetJS, CaffeJS implements the network structure as a directed acyclic graph like Caffe. This means it can handle flexible graph traversal, parallel layers and layer dependencies out of the box. To iterate through the layers, please use the `CaffeModel.layerIterator()` method.
 
 ```js
 model.layerIterator(function(layer, i, parents){
