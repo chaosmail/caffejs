@@ -41,12 +41,18 @@ for key in net.params:
 	print("Expected Shape: ", nb_filter, stack_size, nb_col, nb_row)	
 	print("Found Shape: ", np.array(blobs[0].data).shape)
 
-	weights_p = np.array(blobs[0].data).reshape((nb_filter, stack_size*nb_col*nb_row))
-	weights_b = np.array(blobs[1].data)
+	weights_p = blobs[0].data.astype(dtype=np.float32)
+	weights_b = blobs[1].data.astype(dtype=np.float32)
+
+	# Caffe uses the shape f, (d, y, x)
+	# ConvnetJS uses the shape f, (y, x, d)
+	weights_p = np.swapaxes(np.swapaxes(weights_p, 3, 1), 2, 1)
+
+	print("Converted to Shape: ", weights_p.shape)
 
 	weights = {
-		'filter': weights_p.astype(dtype=np.float32).tolist(),
-		'bias': weights_b.astype(dtype=np.float32).tolist()
+		'filter': weights_p.reshape((nb_filter, stack_size*nb_col*nb_row)).tolist(),
+		'bias': weights_b.tolist()
 	}
 
 	filename = WEIGHTS_DIR + key + '.txt'
@@ -54,17 +60,11 @@ for key in net.params:
 	if not fs.exists(fs.dirname(filename)):
 		fs.mkdir(fs.dirname(filename))
 
-	def to_str(a):
-		# if key in ['fc6', 'fc7']:
-		# 	# Cut the number, don't do this at home!
-		# 	return str(a)[0:2]
-		return str(a)
-
 	fs.write(fs.add_suffix(filename, "_filter"), "")
 	for i, f_weights in enumerate(weights['filter']):
 		if i == len(weights['filter']) - 1:
-			fs.append(fs.add_suffix(filename, "_filter"), ",".join(map(to_str, f_weights)))
+			fs.append(fs.add_suffix(filename, "_filter"), ",".join(map(str, f_weights)))
 		else:
-			fs.append(fs.add_suffix(filename, "_filter"), ",".join(map(to_str, f_weights)) + "\n")
+			fs.append(fs.add_suffix(filename, "_filter"), ",".join(map(str, f_weights)) + "\n")
 
-	fs.write(fs.add_suffix(filename, "_bias"), ",".join(map(to_str, weights['bias'])))
+	fs.write(fs.add_suffix(filename, "_bias"), ",".join(map(str, weights['bias'])))

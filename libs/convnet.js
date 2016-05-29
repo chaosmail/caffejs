@@ -50,7 +50,7 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
 
   var sum = function (A){
     var prev = 1.0;
-    for (var i=0,len=A.length;i<len;++i) prev *= A[i];
+    for (var i=0,len=A.length;i<len;++i) prev += A[i];
     return prev;
   }
 
@@ -470,7 +470,7 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
             for (var dx = startx; dx < endx; dx++) {
               for (var dy = starty; dy < endy; dy++) {
                 for (var dd = startd; dd < endd; dd++) {
-                  var dval = this.get(global.mod(dx, this.sx), global.mod(dy, this.sy), global.mod(dd, this.depth));
+                  var dval = this.get(dx, dy, dd);
                   V2.add(x, y, d, dval);
                   n++;
                 }

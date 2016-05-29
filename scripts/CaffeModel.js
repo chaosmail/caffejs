@@ -115,6 +115,7 @@ var CaffeModel = (function(cn){
           break;
         case 'fc':
           layer.cn.num_inputs = l.in_sx * l.in_sy * l.in_depth;
+          layer.cn.out_depth = layer.cn.num_inputs;
           break;
         case 'concat':
           // concatenation along num
@@ -596,7 +597,80 @@ var CaffeModel = (function(cn){
    * @returns undefined
    */
 
+  /**
+   * Returns the number of weights and bias parameters of
+   * the given layer
+   * @param  {Object} layer - Current layer
+   * @return {Number[]} [n_weights, n_bias]
+   */
+  CaffeModel.prototype.getNumParameters = function(layer){
+    var l = layer.cn;
+    
+    switch(l.layer_type){
+      case 'conv':
+        return [l.in_depth * l.sx * l.sy * l.out_depth, l.out_depth];
+      case 'fc':
+        return [l.in_depth * l.out_depth, l.out_depth];
+      default:
+        return [0, 0];
+    }
+  }
+
+  // This should be implemented for each layer
+  CaffeModel.prototype.computeOutputShape = function(layer){
+    var l = layer.cn; 
+
+    switch(l.layer_type){
+      case 'conv':
+        return [
+          l.out_depth,
+          Math.ceil((l.in_sy + 2 * l.pad - l.sy + 1 + l.stride - 1) / l.stride),
+          Math.ceil((l.in_sx + 2 * l.pad - l.sx + 1 + l.stride - 1) / l.stride),
+        ]
+      case 'pool':
+        return [
+          l.in_depth,
+          Math.ceil((l.in_sy + 2 * l.pad - l.sy + 1 + l.stride - 1) / l.stride),
+          Math.ceil((l.in_sx + 2 * l.pad - l.sx + 1 + l.stride - 1) / l.stride),
+        ]
+      case 'fc':
+      case 'softmax':
+        return [
+          l.in_depth * l.in_sy * l.in_sx, 1, 1
+        ];
+      default:
+        return [
+          l.in_depth, l.in_sy, l.in_sx
+        ];
+    }
+  }
+
+  CaffeModel.prototype.getOutputShape = function(layer){
+   var l = layer.cn;    
+   return [l.out_depth, l.out_sy, l.out_sx]; 
+  }
+
+  CaffeModel.prototype.getLayerDescription = function(layer){
+   var l = layer.cn;    
+   var d = [l.layer_type.toUpperCase(), layer.name];
+
+   switch (l.layer_type) {
+    case 'conv':
+      d.push('Stride ' + l.stride);
+      d.push('Pad ' + l.pad);
+      break;
+    case 'pool':
+      d.push(l.pool);
+      d.push('Stride ' + l.stride);
+      d.push('Pad ' + l.pad);
+      break;
+   }
+
+   return d;
+  }
+
   CaffeModel.prototype.debugStructure = function(){
+    var self = this;
     var numParams = 0;
     var f = d3.format('s')
     var f2 = d3.format(',d')
@@ -604,49 +678,15 @@ var CaffeModel = (function(cn){
 
     this.layerIterator(function(layer, i){
       var l = layer.cn;
+      var numParamsPerLayer = convnetjs.sum(self.getNumParameters(layer));
+
       var str = "";
-      str += l.layer_type.toUpperCase().paddingLeft("       ");
-  
-      str +=  "::" + l.out_sx + "x" + l.out_sy + "x" + l.out_depth;
-      
-      str += "::" + layer.name;
+      str += self.getOutputShape(layer).join('x') + " :: ";
+      str += self.getLayerDescription(layer).join(' ');
 
-
-      if (l.layer_type == 'conv' || l.layer_type == 'fc') {
-
-        var x = l.sx;
-        var y = l.sy;
-        var c = l.in_depth;
-
-        if (l.layer_type == 'fc') {
-          x = 1;
-          y = 1;
-        }
-
-        var n = x*y*c;
-        var b = l.out_depth;
-        
-        str += ': ';
-
-        if (b) {
-          str += b + "x";
-        }
-
-        str += c + "x" + x + "x" + y;
-
-        if (l.layer_type == 'conv') {
-          str += " (S" + l.stride + " P" + l.pad + ")";
-        }
-
-        if (b) {
-          n = n*b + b;
-          numParams += n;
-          str += " => " + f2(n) + ' params';
-        
-        }
-      }
-      else if (l.layer_type == 'pool') {
-        str += ": " + l.sx + "x" + l.sy + " (S" + l.stride + " P" + l.pad + ")";
+      if (numParamsPerLayer) {
+        numParams += numParamsPerLayer;
+        str += " => " + f2(numParamsPerLayer) + ' parameters';
       }
 
       numLayers = i + 1;

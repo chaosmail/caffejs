@@ -115,11 +115,6 @@ function vol2rgb(vol, mean){
   return data;
 }
 
-// src: http://stackoverflow.com/a/14760377/5200303
-String.prototype.paddingLeft = function (paddingValue) {
-   return String(paddingValue + this).slice(-paddingValue.length);
-};
-
 // function visualize_layer(elem, layer, scale){
 //   scale = scale || 5;
 //   var filters = layer.cn.filters;
