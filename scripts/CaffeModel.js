@@ -115,7 +115,6 @@ var CaffeModel = (function(cn){
           break;
         case 'fc':
           layer.cn.num_inputs = l.in_sx * l.in_sy * l.in_depth;
-          layer.cn.out_depth = layer.cn.num_inputs;
           break;
         case 'concat':
           // concatenation along num
@@ -610,7 +609,7 @@ var CaffeModel = (function(cn){
       case 'conv':
         return [l.in_depth * l.sx * l.sy * l.out_depth, l.out_depth];
       case 'fc':
-        return [l.in_depth * l.out_depth, l.out_depth];
+        return [l.in_depth * l.in_sx * l.in_sy * l.out_depth, l.out_depth];
       default:
         return [0, 0];
     }
@@ -636,7 +635,7 @@ var CaffeModel = (function(cn){
       case 'fc':
       case 'softmax':
         return [
-          l.in_depth * l.in_sy * l.in_sx, 1, 1
+          l.out_depth, 1, 1
         ];
       default:
         return [
@@ -695,7 +694,7 @@ var CaffeModel = (function(cn){
 
     console.log('---')
     console.log('Total number of layers ' + f2(numLayers));
-    console.log('Total number of params ' + f2(numParams) + ' (memory: ' + f(numParams*8) + 'b): ');
+    console.log('Total number of params ' + f2(numParams) + ' (memory: ' + f(numParams*4) + 'b): ');
   }
 
   // forward prop the network. 

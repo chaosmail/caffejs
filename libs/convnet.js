@@ -49,7 +49,7 @@ var convnetjs = convnetjs || { REVISION: 'ALPHA' };
   }
 
   var sum = function (A){
-    var prev = 1.0;
+    var prev = 0.0;
     for (var i=0,len=A.length;i<len;++i) prev += A[i];
     return prev;
   }
