@@ -96,7 +96,7 @@ model.getLayer(layerName)
 
 The samples `00_*_model.html` load famous Deep Learning Models such as AlexNet, VGG, GoogLeNet, etc. directly in your browser. It also analyzes their structure and prints detailed information such as the network dimension, number of parameters and network size in memory to the Console.
 
-Here is a break-down of AlexNet computed with CaffeJS.
+Here is a break-down of **AlexNet** computed with CaffeJS.
 
 > the dimensions on the left side define the output dimensions of the current layer `d, h, w`. The memory size is computed using Float32 (4 byte).
 
@@ -130,7 +130,38 @@ Total number of layers 24
 Total number of params 62,378,344 (memory: 249.513376Mb)
 ```
 
-> Please note that this samples don't load the networks' weights but only the structure with default initialization.
+Here is a break-down of **VGG CNN S** computed with CaffeJS.
+
+```
+3x224x224 :: INPUT data
+96x110x110 :: CONV conv1 96x7x7 Stride 2 Pad 0 => 14,208 parameters
+96x110x110 :: RELU relu1
+96x110x110 :: LRN norm1
+96x37x37 :: POOL pool1 MAX 3x3 Stride 3 Pad 0
+256x33x33 :: CONV conv2 256x5x5 Stride 1 Pad 0 => 614,656 parameters
+256x33x33 :: RELU relu2
+256x17x17 :: POOL pool2 MAX 2x2 Stride 2 Pad 0
+512x17x17 :: CONV conv3 512x3x3 Stride 1 Pad 1 => 1,180,160 parameters
+512x17x17 :: RELU relu3
+512x17x17 :: CONV conv4 512x3x3 Stride 1 Pad 1 => 2,359,808 parameters
+512x17x17 :: RELU relu4
+512x17x17 :: CONV conv5 512x3x3 Stride 1 Pad 1 => 2,359,808 parameters
+512x17x17 :: RELU relu5
+512x6x6 :: POOL pool5 MAX 3x3 Stride 3 Pad 0
+4096x1x1 :: FC fc6 => 75,501,568 parameters
+4096x1x1 :: DROPOUT drop6
+4096x1x1 :: RELU relu6
+4096x1x1 :: FC fc7 => 16,781,312 parameters
+4096x1x1 :: DROPOUT drop7
+4096x1x1 :: RELU relu7
+1000x1x1 :: FC fc8 => 4,097,000 parameters
+1000x1x1 :: SOFTMAX prob
+---
+Total number of layers 23
+Total number of params 102,908,520 (memory: 411.63408Mb):
+```
+
+Please note that these samples don't load the networks' weights but only the structure with default initialization.
 
 ### Classification using GoogLeNet
 
