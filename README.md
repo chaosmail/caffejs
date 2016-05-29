@@ -96,6 +96,40 @@ model.getLayer(layerName)
 
 The samples `00_*_model.html` load famous Deep Learning Models such as AlexNet, VGG, GoogLeNet, etc. directly in your browser. It also analyzes their structure and prints detailed information such as the network dimension, number of parameters and network size in memory to the Console.
 
+Here is a break-down of AlexNet computed with CaffeJS.
+
+> the dimensions on the left side define the output dimensions of the current layer `d, h, w`. The memory size is computed using Float32 (4 byte).
+
+```
+3x227x227 :: INPUT data
+96x55x55 :: CONV conv1 96x11x11 Stride 4 Pad 0 => 34,944 parameters
+96x55x55 :: RELU relu1
+96x55x55 :: LRN norm1
+96x27x27 :: POOL pool1 MAX 3x3 Stride 2 Pad 0
+256x27x27 :: CONV conv2 256x5x5 Stride 1 Pad 2 => 614,656 parameters
+256x27x27 :: RELU relu2
+256x27x27 :: LRN norm2
+256x13x13 :: POOL pool2 MAX 3x3 Stride 2 Pad 0
+384x13x13 :: CONV conv3 384x3x3 Stride 1 Pad 1 => 885,120 parameters
+384x13x13 :: RELU relu3
+384x13x13 :: CONV conv4 384x3x3 Stride 1 Pad 1 => 1,327,488 parameters
+384x13x13 :: RELU relu4
+256x13x13 :: CONV conv5 256x3x3 Stride 1 Pad 1 => 884,992 parameters
+256x13x13 :: RELU relu5
+256x6x6 :: POOL pool5 MAX 3x3 Stride 2 Pad 0
+4096x1x1 :: FC fc6 => 37,752,832 parameters
+4096x1x1 :: DROPOUT drop6
+4096x1x1 :: RELU relu6
+4096x1x1 :: FC fc7 => 16,781,312 parameters
+4096x1x1 :: DROPOUT drop7
+4096x1x1 :: RELU relu7
+1000x1x1 :: FC fc8 => 4,097,000 parameters
+1000x1x1 :: SOFTMAX prob
+---
+Total number of layers 24
+Total number of params 62,378,344 (memory: 249.513376Mb)
+```
+
 > Please note that this samples don't load the networks' weights but only the structure with default initialization.
 
 ### Classification using GoogLeNet

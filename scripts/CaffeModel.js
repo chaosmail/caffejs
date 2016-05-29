@@ -655,11 +655,13 @@ var CaffeModel = (function(cn){
 
    switch (l.layer_type) {
     case 'conv':
+      d.push([l.out_depth, l.sy, l.sx].join('x'));
       d.push('Stride ' + l.stride);
       d.push('Pad ' + l.pad);
       break;
     case 'pool':
       d.push(l.pool);
+      d.push([l.sy, l.sx].join('x'));
       d.push('Stride ' + l.stride);
       d.push('Pad ' + l.pad);
       break;
