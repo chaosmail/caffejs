@@ -62,7 +62,7 @@ var CaffeModel = (function(cn){
         }
       });
 
-    // Handle ReLU layers, which are usually self-loops in caffe
+    // Handle ReLU layers, which are usually self-loops in Caffe
     // do some performance reasons
     this.layers
       .filter(function(d){
