@@ -1,0 +1,7 @@
+{
+  "buildDir": "build",
+  "examplesBuildDir": "examples/libs",
+  "paths": {
+    "scripts": "modules/**/*.ts"
+  }
+}

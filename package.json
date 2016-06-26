@@ -1,19 +1,33 @@
 {
-  "name": "convnetjs-samples",
-  "version": "1.0.0",
+  "name": "caffejs",
+  "version": "0.1.0",
   "description": "Cool samples using ConvNetJS",
-  "main": "index.js",
+  "main": "build/caffe.js",
   "dependencies": {
-    "convnetjs": "^0.3.0",
     "d3": "^3.5.17",
+    "es6-shim": "^0.35.1",
     "queue-async": "^1.2.1",
-    "webcamjs": "^1.0.6"
+    "webcamjs": "^1.0.6",
+    "whatwg-fetch": "^1.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "dagre-d3": "^0.4.17",
+    "gulp-clean": "^0.3.2",
+    "gulp-plumber": "^1.1.0",
+    "gulp-rename": "^1.2.2",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-typescript": "^2.13.6",
+    "gulp-uglify": "^1.5.4",
+    "http-server": "^0.9.0"
+  },
   "scripts": {
+    "start": "cd examples && http-server",
+    "build": "gulp",
+    "postinstall": "typings install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
+    "caffe",
     "convnet",
     "convnetjs",
     "deeplearning"

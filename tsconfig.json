@@ -1,0 +1,12 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "target": "es5",
+    "sourceMap": true,
+    "outFile": "caffe.js"
+  },
+  "files": [
+    "typings/index.d.ts",
+    "modules/index.ts"
+  ]
+}

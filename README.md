@@ -92,6 +92,8 @@ model.getLayer(layerName)
 
 ## Samples
 
+To run the samples, please execute `npm start` from the root directory. Make sure you updated all dependencies by running `npm install` beforehand.
+
 ### Analyze Deep Learning structures
 
 The samples `00_*_model.html` load famous Deep Learning Models such as AlexNet, VGG, GoogLeNet, etc. directly in your browser. It also analyzes their structure and prints detailed information such as the network dimension, number of parameters and network size in memory to the Console.
@@ -324,7 +326,13 @@ This is a cool demo that runs the famous [DeepDream](https://github.com/google/d
 
 > Debugging this demo: Go to the `Sources` panel in the Chrome Developer Tools and load the demo. You should see a webworker icon entitled with `deepdream_worker.js`. You can click on it and set your breakpoints as usual. Additionally, you could enable `DevTools for Services Workers` in the `Resources` panel.
 
-## What's left to do
+## Development
+
+### Getting Started
+
+Checkout the project and run `npm install` to get started.
+
+### What's left to do
 
 * ConvNetJS - Implement more layers and missing parameters: some models need special layers, like elementwise sum, or convolution groups etc.
 * CaffeJS - Find a good format for transferring the weights to the browser. The current TXT or JSON format is not suitable for large blobs. Maybe we can put the weights into an image (or images) and parse them with Canvas.
