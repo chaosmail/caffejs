@@ -5,8 +5,5 @@
     "dagre-d3": "registry:dt/dagre-d3#0.0.0+20160620231311",
     "es6-shim": "registry:dt/es6-shim#0.31.2+20160602141504",
     "whatwg-fetch": "registry:dt/whatwg-fetch#0.0.0+20160524142046"
-  },
-  "dependencies": {
-    "d3": "registry:npm/d3#3.0.0+20160211003958"
   }
 }

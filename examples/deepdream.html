@@ -1,15 +1,15 @@
 <!DOCTYPE HTML>
 <html>
   <head>
-    <title>ConvNetJS Sample - DeepDream in the Browser</title>
+    <title>Caffe.js Sample - DeepDream in the Browser</title>
 
-    <script src="scripts/utils.js"></script>
+    <script src="libs/caffe.min.js"></script>
   </head>
   <body>
 
     <h2>DeepDream in the Browser</h2>
 
-    <p>This demo runs the famous DeepDream demo entirely in the browser using the pretrained GoogLeNet model from Caffe, CaffeJS and ConvNetJS. It's a JavaScript port from the <a href="https://github.com/google/deepdream/blob/master/dream.ipynb">original version</a> and performs the computation using a CoffeJS model in a webworker task in your browser.</p>
+    <p>This demo runs the famous DeepDream demo entirely in the browser using the pretrained GoogLeNet model from Caffe, Caffe.js and a fork of ConvNetJS. It's a JavaScript port from the <a href="https://github.com/google/deepdream/blob/master/dream.ipynb">original version</a> and performs the computation using a Caffe.js model in a webworker task in your browser.</p>
 
     <canvas id="image"></canvas>
     <br>
@@ -18,10 +18,14 @@
 
     <script>
       // We use this canvas and image
+      var jil = ImgJS;
       var imgUrl = "data/deepdream/sky_big.jpg";
+      var image = new jil.Image(imgUrl);
       var canvas = document.getElementById('image');
       var params = {iter_n:10, octave_n:4, end:'inception_4c/output'};
-      var image, worker;
+      // the mean value can be found in train_val.prototxt
+      var mean = [104, 117, 123];
+      var worker;
 
       init();
 
@@ -43,12 +47,15 @@
 
             case 'dream-progress':
               console.log('Running iteration ' + e.data.iteration + ' of octave ' + e.data.octave);
-              updateImg(canvas, e.data.output, e.data.width, e.data.height);
+              image.fromVol(Net.Vol.fromJSON(e.data.output), mean, [2,1,0]);
+              image.render(canvas);
               break;
             
             case 'dream-finished':
             default:
-              updateImg(canvas, e.data.output, e.data.width, e.data.height);
+
+              image.fromVol(Net.Vol.fromJSON(e.data.output), mean, [2,1,0]);
+              image.render(canvas);
               break;
           }
         }
@@ -60,10 +67,8 @@
       }
 
       function load() {
-        loadImg(canvas, imgUrl).then(function(img){
-          updateImg(canvas, img.data, img.width, img.height);
-          
-          image = img;
+        image.load().then(function(){
+          image.render(canvas);
           start();
         });
       }
@@ -75,7 +80,7 @@
         );
 
         worker.postMessage({
-          input: image,
+          input: image.toVol(mean, [2,1,0]).toJSON(),
           params: params,
         });
       }

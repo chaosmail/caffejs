@@ -112,7 +112,6 @@ namespace Net {
       this.dw[ix] /= v;
     }
 
-
     roll(ox: number = 0.0, oy: number = 0.0, od: number = 0.0) {
       var V2 = this.clone();
       for (let d = 0, depth = V2.depth; d < depth; ++d) {

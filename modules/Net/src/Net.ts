@@ -18,6 +18,10 @@ namespace Net {
 
     }
 
+    getLayer(name: string): ILayer {
+      return this.layers.get(name);
+    }
+
     setInputDimensions(width: number, height: number, depth: number = 3) {
       this.layerIterator((layer: ILayer, i: number, pred: ILayer[]) => {
         if (i === 0) {
