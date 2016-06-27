@@ -6,11 +6,13 @@ This work is pre-alpha and based on ConvNetJS (which is alpha), so you can imagi
 
 ## Getting Started
 
+To run the samples, please execute `npm start` from the root directory. Make sure you updated all dependencies by running `npm install` beforehand.
+
 ### Running CaffeJS
 
-> Please note, that the ConvNetJS library in this repo is a [fork](https://github.com/chaosmail/convnetjs) of the original version. It's not updated yet, please be patient.
+> Please note, that the ConvNetJS library in this repo is a [fork](https://github.com/chaosmail/convnetjs) of the original version.
 
-Clone the repository to your local drive and then start a static webserver in the root directory (e.g. run `http-server`). Now you can open the `00_*model.html` samples that load popular deep learning architectures (such as AlexNet, VGG, GoogLeNet, etc.) and analyze their structure. They actually load the Caffe models from `.prototxt` files and convert them on-the-fly to ConvNetJS models.
+Clone the repository to your local drive and then start a static webserver in the root directory (e.g. run `npm start`). Now you can open `models.html` that loads and visualizes popular deep learning architectures (such as AlexNet, VGG, GoogLeNet, etc.) to analyze their structure. This loads and parses the Caffe models from `.prototxt` files and convert them on-the-fly to ConvNetJS models.
 
 To run a forward pass we need to load some pretrained model weights. You can use the files `weights_to_json.py` and `weights_to_txt.py` to convert `*.caffemodel` files to JSON or TXT weights. Unfortunately, you need to have `Caffe` and `pycaffe` installed (which is a pain). However, I plan to host the ConvNetJS models on Dropbox as soon as we have found an acceptable format.
 
@@ -91,8 +93,6 @@ model.getLayer(layerName)
 ```
 
 ## Samples
-
-To run the samples, please execute `npm start` from the root directory. Make sure you updated all dependencies by running `npm install` beforehand.
 
 ### Analyze Deep Learning structures
 

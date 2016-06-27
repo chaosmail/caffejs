@@ -1,10 +1,10 @@
 <!DOCTYPE HTML>
 <html>
   <head>
-    <title>Caffe.js Sample - GoogLeNet</title>
+    <title>Caffe.js Sample - Deep Learning Models</title>
 
     <script src="libs/d3.min.js"></script>
-    <script src="libs/caffe.js"></script>
+    <script src="libs/caffe.min.js"></script>
 
     <script src="libs/lodash.min.js"></script>
     <script src="libs/graphlib.core.min.js"></script>
@@ -14,6 +14,14 @@
     <link rel="stylesheet" href="styles/graph.css">
   </head>
   <body>
+    <div class="controls">
+      <select>
+        <option value="models/bvlc_alexnet/deploy.prototxt">AlexNet</option>
+        <option selected="selected" value="models/bvlc_googlenet/deploy.prototxt">GoogLeNet</option>
+        <option value="models/VGG_CNN_S/deploy.prototxt">VGG CNN S</option>
+        <option value="models/nin_imagenet/deploy.prototxt">NiN</option>
+      </select>
+    </div>
     <div class="model">
       
     </div>
@@ -22,11 +30,13 @@
 
     function loadModel(url) {
 
-      // Let's create a GoogLeNet model from Caffe
+      // Let's create a new model from Caffe
       var model = new Net.CaffeModel(url);
       
       model.load().then(function(d){
         
+        console.clear();
+
         // Debug the structure
         model.debugStructure();
 
@@ -35,6 +45,11 @@
         dag.render('.model', 1200);
       });
     }
+
+    d3.select('.controls > select').on('change', function(){
+      var url = d3.select('.controls > select').property("value");
+      loadModel(url);
+    });
 
     loadModel('models/bvlc_googlenet/deploy.prototxt');
 

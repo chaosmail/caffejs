@@ -66,8 +66,8 @@ namespace Net {
           opt.filters = cp.num_output !== undefined ? +cp.num_output : undefined;
           opt.pad = cp.pad !== undefined ? +cp.pad : undefined;
           opt.stride = cp.stride !== undefined ? +cp.stride : undefined;
-          opt.l1_decay_mul = p && p[0].decay_mult !== undefined ? +p[0].decay_mult : 0.0;
-          opt.l2_decay_mul = p && p[1].decay_mult !== undefined ? +p[1].decay_mult : 1.0;
+          opt.l1_decay_mul = p && p.length && p[0].decay_mult !== undefined ? +p[0].decay_mult : 0.0;
+          opt.l2_decay_mul = p && p.length && p[1].decay_mult !== undefined ? +p[1].decay_mult : 1.0;
           layer = new ConvLayer(opt);
           break;
 
@@ -107,8 +107,8 @@ namespace Net {
           var pp = layerOpt.inner_product_param || {};
           var p = layerOpt.param || {};
           opt.num_neurons = pp.num_output !== undefined ? +pp.num_output : undefined;
-          opt.l1_decay_mul = p && p[0].decay_mult !== undefined ? +p[0].decay_mult : 0.0;
-          opt.l2_decay_mul = p && p[1].decay_mult !== undefined ? +p[1].decay_mult : 1.0;
+          opt.l1_decay_mul = p && p.length && p[0].decay_mult !== undefined ? +p[0].decay_mult : 0.0;
+          opt.l2_decay_mul = p && p.length && p[1].decay_mult !== undefined ? +p[1].decay_mult : 1.0;
           layer = new FullyConnectedLayer(opt);
           break;
 

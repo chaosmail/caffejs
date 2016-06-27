@@ -34,6 +34,7 @@ gulp.task('scripts', ['clean:build'], function () {
       suffix: '.min'
     }))
     .pipe(gulp.dest(cfg.buildDir))
+    .pipe(gulp.dest(cfg.examplesBuildDir));
 });
 
 gulp.task('watch', ['scripts'], function() {
