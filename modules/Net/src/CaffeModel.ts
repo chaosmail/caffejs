@@ -18,7 +18,8 @@ namespace Net {
 
     load() {
       return this.fetch(this.modelPath)
-        .then((model) => this.create(model));
+        .then((model) => this.create(model))
+        .then((model) => this.loadWeights());
     }
 
     fetch(url: string) {
@@ -173,6 +174,34 @@ namespace Net {
               this.edges.push({ from: d.input, to: d.name });
             })
         });
+    }
+
+    loadWeights(): any {
+      if (!this.weightPath) {
+        return Promise.resolve();
+      }
+      // Load all separate weights for the layers
+      return Promise.all(this.layers.values()
+        .filter((d) => d.layer_type == 'conv' || d.layer_type == 'fc')
+        .map((layer: any) => {
+            return Promise.all([
+              fetch(this.weightPath + layer.name + '_filter.bin')
+                .then((response) => response.arrayBuffer())
+                .then((arrayBuffer) => {
+                  var f = new Float32Array(arrayBuffer);
+                  var n = layer.sx * layer.sy * layer.in_depth;
+                  for(var i=0; i<layer.out_depth; i++) {
+                    layer.filters[i].w.set(f.slice(i*n, i*n+n));
+                  }
+                }),
+              fetch(this.weightPath + layer.name + '_bias.bin')
+                .then((response) => response.arrayBuffer())
+                .then((arrayBuffer) => {
+                  var f = new Float32Array(arrayBuffer);
+                  layer.biases.w.set(f);
+                })
+            ]);
+        }));
     }
   }
 }

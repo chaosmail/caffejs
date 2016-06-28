@@ -5,7 +5,7 @@ import numpy as np
 
 # Make sure that caffe and pycaffe are installed
 # and on the python path:
-caffe_root = '../caffe/'  # this file is expected to be in {caffe_root}/examples
+caffe_root = '../../caffe/'  # this file is expected to be in {caffe_root}/examples
 import sys
 sys.path.insert(0, caffe_root + 'python')
 
@@ -15,9 +15,9 @@ model = "caffejs_deepdream"
 
 # Set the right path to your model definition file, pretrained model weights,
 # and the image you would like to classify.
-MODEL_FILE = 'models/%s/deploy.prototxt' % model
-PRETRAINED = 'models/%s/%s.caffemodel' % (model, model)
-WEIGHTS_DIR = 'models/%s/weights/' % model
+MODEL_FILE = '../examples/models/%s/deploy.prototxt' % model
+PRETRAINED = '../examples/models/%s/%s.caffemodel' % (model, model)
+WEIGHTS_DIR = '../examples/models/%s/weights/' % model
 
 # Can be either 0 for TRAIN or 1 for TEST
 phase = 1

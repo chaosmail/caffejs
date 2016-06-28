@@ -54,14 +54,17 @@
       });
 
       var labels;
-      d3.text('data/ilsvrc12/det_synset_words.txt', function(data){
+      d3.text('data/ilsvrc12/synset_words.txt', function(data){
         labels = data.split('\n').map(function(d){
-          return d.split(' ')[1];
+          return d.substr(10);
         });
       });
 
       // Let's create a GoogLeNet model from Caffe
-      var model = new Net.CaffeModel('models/bvlc_googlenet/deploy.prototxt');
+      var model = new Net.CaffeModel(
+        'models/bvlc_googlenet/deploy.prototxt',
+        'models/bvlc_googlenet/weights/'
+      );
 
       // the mean value can be found in train_val.prototxt
       var mean = [104, 117, 123];

@@ -11,6 +11,9 @@ namespace Net {
     public in_act: Vol;
     public out_act: Vol;
 
+    public sx: number = 1;
+    public sy: number = 1;
+
     public num_inputs: number;
     public l1_decay_mul: number;
     public l2_decay_mul: number;

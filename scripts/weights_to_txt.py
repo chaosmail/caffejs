@@ -5,19 +5,19 @@ import numpy as np
 
 # Make sure that caffe and pycaffe are installed
 # and on the python path:
-caffe_root = '../caffe/'  # this file is expected to be in {caffe_root}/examples
+caffe_root = '../../caffe/'  # this file is expected to be in {caffe_root}/examples
 import sys
 sys.path.insert(0, caffe_root + 'python')
 
 import caffe
 
-model = "nin_imagenet"
+model = "bvlc_googlenet"
 
 # Set the right path to your model definition file, pretrained model weights,
 # and the image you would like to classify.
-MODEL_FILE = 'models/%s/deploy.prototxt' % model
-PRETRAINED = 'models/%s/%s.caffemodel' % (model, model)
-WEIGHTS_DIR = 'models/%s/weights/' % model
+MODEL_FILE = '../examples/models/%s/deploy.prototxt' % model
+PRETRAINED = '../examples/models/%s/%s.caffemodel' % (model, model)
+WEIGHTS_DIR = '../examples/models/%s/weights/' % model
 
 # Can be either 0 for TRAIN or 1 for TEST
 phase = 1
@@ -44,9 +44,10 @@ for key in net.params:
 	weights_p = blobs[0].data.astype(dtype=np.float32)
 	weights_b = blobs[1].data.astype(dtype=np.float32)
 
-	# Caffe uses the shape f, (d, y, x)
-	# ConvnetJS uses the shape f, (y, x, d)
-	weights_p = np.swapaxes(np.swapaxes(weights_p, 3, 1), 2, 1)
+	if len(weights_p.shape) > 2:
+		# Caffe uses the shape f, (d, y, x)
+		# ConvnetJS uses the shape f, (y, x, d)
+		weights_p = np.swapaxes(np.swapaxes(weights_p, 3, 1), 2, 1)
 
 	print("Converted to Shape: ", weights_p.shape)
 
