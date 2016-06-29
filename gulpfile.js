@@ -22,11 +22,11 @@ gulp.task('scripts', ['clean:build'], function () {
 
   var tsResult = tsProject.src()
     .pipe(plumber())
-    .pipe(sourcemaps.init())
+    //.pipe(sourcemaps.init())
     .pipe(ts(tsProject));
 
   return tsResult.js
-    .pipe(sourcemaps.write())
+    //.pipe(sourcemaps.write())
     .pipe(gulp.dest(cfg.buildDir))
     .pipe(gulp.dest(cfg.examplesBuildDir))
     .pipe(uglify())

@@ -34,12 +34,12 @@ namespace Net {
       }
     }
 
-    updateDimensions(pred?: ILayer | ILayer[]) {
+    updateDimensions(pred?: ILayer[]) {
 
-      if (<ILayer> pred){
-        this.in_sx = (<ILayer> pred).out_sx;
-        this.in_sy = (<ILayer> pred).out_sy;
-        this.in_depth = (<ILayer> pred).out_depth;
+      if (pred){
+        this.in_sx = pred[0].out_sx;
+        this.in_sy = pred[0].out_sy;
+        this.in_depth = pred[0].out_depth;
       }
 
       this.out_sx = this.in_sx;

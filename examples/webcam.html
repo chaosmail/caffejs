@@ -31,7 +31,7 @@
 
     <button onclick="snap()" class="take-picture" style="display: none;">Picture</button>
 
-    <div class="test"></div>
+    <div class="model"></div>
 
     <script language="JavaScript">
       var nj = NumJS;
@@ -84,6 +84,8 @@
           var scores = model.forward(input);
           var topInd = nj.argmaxn(scores.w, n);
           var topVal = nj.maxn(scores.w, n);
+
+          console.log(scores);
 
           for (var i=0;i<n;i++) {
             console.log(format(topVal[i]) + ' ' + labels[topInd[i]]);

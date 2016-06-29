@@ -31,21 +31,21 @@ namespace Net {
       // compute max activation
       var as = V.w;
       var amax = V.w[0];
-      for (var i = 1; i < this.out_depth; i++) {
-        if (as[i] > amax) amax = as[i];
+      for(var i=1;i<this.out_depth;i++) {
+        if(as[i] > amax) amax = as[i];
       }
 
       // compute exponentials (carefully to not blow up)
       var es = nj.zeros(this.out_depth);
       var esum = 0.0;
-      for (var i = 0; i < this.out_depth; i++) {
+      for(var i=0;i<this.out_depth;i++) {
         var e = Math.exp(as[i] - amax);
         esum += e;
         es[i] = e;
       }
 
       // normalize and output to sum to one
-      for (var i = 0; i < this.out_depth; i++) {
+      for(var i=0;i<this.out_depth;i++) {
         es[i] /= esum;
         A.w[i] = es[i];
       }
@@ -71,12 +71,12 @@ namespace Net {
       return -Math.log(this.es[y]);
     }
 
-    updateDimensions(pred: ILayer) {
+    updateDimensions(pred: ILayer[]) {
 
       if (pred){
-        this.in_sx = pred.out_sx;
-        this.in_sy = pred.out_sy;
-        this.in_depth = pred.out_depth;
+        this.in_sx = pred[0].out_sx;
+        this.in_sy = pred[0].out_sy;
+        this.in_depth = pred[0].out_depth;
       }
 
       this.num_inputs = this.in_sx * this.in_sy * this.in_depth;

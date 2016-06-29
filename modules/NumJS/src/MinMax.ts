@@ -23,7 +23,7 @@ namespace NumJS {
 
   export function maxn(A, n) {
     n = n || 3;
-    return A.sort(function(a, b) {
+    return A.slice(0).sort(function(a, b) {
       return b - a;
     }).slice(0, n);
   }

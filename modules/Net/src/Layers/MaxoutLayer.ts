@@ -106,12 +106,12 @@ namespace Net {
       }
     }
 
-    updateDimensions(pred: ILayer) {
+    updateDimensions(pred: ILayer[]) {
 
       if (pred){
-        this.in_sx = pred.out_sx;
-        this.in_sy = pred.out_sy;
-        this.in_depth = pred.out_depth;
+        this.in_sx = pred[0].out_sx;
+        this.in_sy = pred[0].out_sy;
+        this.in_depth = pred[0].out_depth;
       }
 
       this.out_sx = this.in_sx;

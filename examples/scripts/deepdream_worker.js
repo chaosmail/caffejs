@@ -1,13 +1,16 @@
 importScripts(
   '../libs/d3.min.js',
-  '../libs/caffe.min.js'
+  '../libs/caffe.js'
 );
 
 var window = self;
 var nj = NumJS;
 
 // Let's create a GoogLeNet model from Caffe
-var model = new Net.CaffeModel('../models/caffejs_deepdream/deploy.prototxt');
+var model = new Net.CaffeModel(
+  '../models/bvlc_googlenet/caffejs_deepdream.prototxt',
+  '../models/bvlc_googlenet/weights/'
+);
 
 // the mean value can be found in train_val.prototxt
 var mean = [104, 117, 123];

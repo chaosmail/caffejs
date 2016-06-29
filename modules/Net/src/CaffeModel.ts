@@ -42,7 +42,7 @@ namespace Net {
       // Get predecessors of the current layers
       if (layerOpt.bottom !== undefined){
         if (!Array.isArray(layerOpt.bottom)) {
-          opt.pred = this.layers.get(layerOpt.bottom);
+          opt.pred = [this.layers.get(layerOpt.bottom)];
         }
         else {
           opt.pred = layerOpt.bottom.map((d) => this.layers.get(d));
@@ -75,7 +75,7 @@ namespace Net {
         case 'lrn':
           var p = layerOpt.lrn_param || {};
           opt.k = p.k !== undefined ? +p.k : 1;
-          opt.n = opt.local_size !== undefined ? +p.local_size : undefined;
+          opt.n = p.local_size !== undefined ? +p.local_size : undefined;
           opt.alpha = p.alpha !== undefined ? +p.alpha : undefined;
           opt.beta = p.beta !== undefined ? +p.beta : undefined;
           layer = new LocalResponseNormalizationLayer(opt);

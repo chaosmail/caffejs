@@ -1,0 +1,13 @@
+.net-layer {
+  position: relative;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+.net-vis {
+  margin-left: 200px;
+}
+.net-description {
+  width: 200px;
+  position: absolute;
+  margin-right: 20px;
+}

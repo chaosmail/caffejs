@@ -15,10 +15,13 @@ namespace Net {
     input: string;
     output: string;
 
+    in_act: Vol | Vol[];
+    out_act: Vol;
+
     getNumParameters(): number[];
     getOutputShape(): number[];
     getDescription(): string[];
-    updateDimensions(pred?: ILayer | ILayer[]);
+    updateDimensions(pred?: ILayer[]);
     forward(V: Vol, is_training: boolean);
     backward(y?: Vol);
   }
