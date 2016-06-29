@@ -13,7 +13,7 @@ var model = new Net.CaffeModel(
 );
 
 // the mean value can be found in train_val.prototxt
-var mean = [104, 117, 123];
+var mean = [104.0, 116.0, 122.0];
 
 model.load().then(function(d){
   // Notify the main thread that the model is ready

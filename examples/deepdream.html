@@ -39,7 +39,7 @@
       var canvas = document.getElementById('image');
       var params = {iter_n:10, octave_n:4, end:'inception_4c/output'};
       // the mean value can be found in train_val.prototxt
-      var mean = [104, 117, 123];
+      var mean = [104.0, 116.0, 122.0];
       var worker;
 
       init();
@@ -101,6 +101,7 @@
         worker.postMessage({
           input: image.toVol(mean, [2,1,0]).toJSON(),
           params: params,
+          mean: mean
         });
       }
 
