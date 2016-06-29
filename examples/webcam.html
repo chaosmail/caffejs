@@ -28,8 +28,14 @@
   <body>
    
     <div class='camera' style="width:224px; height:224px;"></div>
-
-    <button onclick="snap()" class="take-picture" style="display: none;">Picture</button>
+    <div>
+      <button onclick="snap()" class="take-picture" style="display: none;">Picture</button>
+      <button onclick="visualize()" class="take-picture" style="display: none;">Visualize Activations</button>
+      <select name="modelSelect">
+        <option value="alexnet">AlexNet</option>
+        <option selected="selected" value="googlenet">GoogLeNet</option>
+      </select>
+    </div>
 
     <div class="model"></div>
 
@@ -70,8 +76,34 @@
       var mean = [104, 117, 123];
       
       model.load().then(function(){
-        d3.select('.take-picture')
+        console.log('Finished loading.');
+        d3.selectAll('.take-picture')
           .style('display', 'block');
+      });
+
+      d3.select('select[name="modelSelect"]').on('change', function(){
+        
+        d3.selectAll('.take-picture')
+          .style('display', 'none');
+
+        var m = d3.select('select[name="modelSelect"]').property("value");
+        if (m == 'alexnet') {
+          model = new Net.CaffeModel(
+            'models/bvlc_alexnet/deploy.prototxt',
+            'models/bvlc_alexnet/weights/'
+          );
+        }
+        else {
+          model = new Net.CaffeModel(
+            'models/bvlc_googlenet/deploy.prototxt',
+            'models/bvlc_googlenet/weights/'
+          );
+        }
+
+        model.load().then(function(){
+          d3.selectAll('.take-picture')
+            .style('display', 'block');
+          });
       });
 
       function snap() {
@@ -91,6 +123,10 @@
             console.log(format(topVal[i]) + ' ' + labels[topInd[i]]);
           }
         });
+      }
+
+      function visualize() {
+        Utils.FilterDrawer.fromNet(model).render('.model');
       }
     </script>
 
