@@ -271,7 +271,21 @@ This is a cool demo that runs the famous [DeepDream](https://github.com/google/d
 
 ### Getting Started
 
-Checkout the project and run `npm install` in the root directory to get started.
+Checkout the project and run `npm install` in the root directory to get started. Now you can start diving into the code.
+
+You can build your code running `gulp` or using the file watcher `gulp watch`.
+
+### Organization of the Code
+
+This library uses Typescript to modularize JavaScript code and use some of the cool Typescript features on top, such as classes, inheritance, fat arrow functions, etc.
+
+You can find the source code in the `modules/` directory where I organize in 5 modules:
+
+* Net - The fork of ConvNetJS, containing the convnet model, the Volume implementation and the layers
+* ImgJS - An image abstraction for JavaScript to avoid dealing with canvas elements and facilitate conversion to Volumes
+* NumJS - An abstraction for operations on Arrays and Volumes
+* Parser - A parser for converting Prototxt into JavaScript objects
+* Utils - Cool abstractions for visualizations, such as the GraphDrawer and FilterDrawer
 
 ### What's left to do
 
