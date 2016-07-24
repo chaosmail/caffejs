@@ -1186,6 +1186,13 @@ var Net;
             this.out_sy = Math.round((this.in_sy + this.pad * 2 - this.sy) / this.stride + 1);
             this.out_depth = this.in_depth;
         };
+        PoolLayer.prototype.getOutputShape = function () {
+            return [
+                this.out_depth,
+                Math.ceil((this.in_sy + 2 * this.pad - this.sy + 1 + this.stride - 1) / this.stride),
+                Math.ceil((this.in_sx + 2 * this.pad - this.sx + 1 + this.stride - 1) / this.stride),
+            ];
+        };
         PoolLayer.prototype.getDescription = function () {
             return [
                 this.pool + " " + this.layer_type.toUpperCase(),
