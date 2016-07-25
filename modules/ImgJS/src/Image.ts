@@ -25,8 +25,8 @@ namespace ImgJS {
     load() {
       return new Promise((resolve, reject) => {
         var ctx = this.canvas.getContext('2d');
-
         this.image.onload = () => {
+          (<any>ctx).imageSmoothingEnabled = false;
           this.canvas.width = this.image.width;
           this.canvas.height = this.image.height;
           
@@ -48,6 +48,7 @@ namespace ImgJS {
       canvas.width = this.image.width;
       canvas.height = this.image.height;
       var ctx = canvas.getContext('2d');
+      (<any>ctx).imageSmoothingEnabled = false;
       var img = ctx.getImageData(0, 0, this.image.width, this.image.height);
       img.data.set(this.data);
       ctx.putImageData(img, 0, 0);

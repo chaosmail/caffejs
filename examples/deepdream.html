@@ -21,7 +21,7 @@
         <option>inception_3b/output</option>   
         <option>inception_4a/output</option>   
         <option>inception_4b/output</option>   
-        <option>inception_4c/output</option>   
+        <option selected="selected">inception_4c/output</option>   
         <option>inception_4d/output</option>   
         <option>inception_4e/output</option>   
         <option>inception_5a/output</option>   
@@ -29,7 +29,7 @@
         <option>inception_5b/output</option>   
         <option>loss3/classifier</option>   
     </select>
-    <input type="text" name="imageUrl" value="data/deepdream/sky_big.jpg">
+    <input type="text" name="imageUrl" value="data/deepdream/sky.jpg">
 
     <script>
       // We use this canvas and image
@@ -37,9 +37,9 @@
       var imgUrl = "data/deepdream/sky_big.jpg";
       var image;
       var canvas = document.getElementById('image');
-      var params = {iter_n:10, octave_n:4, end:'inception_4c/output'};
+      var params = {iter_n:10, octave_n:4, end:'pool2/3x3_s2'};
       // the mean value can be found in train_val.prototxt
-      var mean = [104.0069879317889, 116.66876761696767, 122.6789143406786];
+      var mean = [104.0, 116.0, 122.0];
       var worker;
 
       init();
