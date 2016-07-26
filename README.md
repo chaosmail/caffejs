@@ -238,6 +238,10 @@ This is a cool demo that runs the famous [DeepDream](https://github.com/google/d
 
 ## Development
 
+Please make sure you have Gulp, Typescript and Typings installed.
+
+`npm install -g gulp-cli typescript typings`
+
 ### Getting Started
 
 Checkout the project and run `npm install` in the root directory to get started. Now you can start diving into the code.
@@ -258,6 +262,7 @@ You can find the source code in the `modules/` directory where I organize in 5 m
 
 ### What's left to do
 
+* ConvNetJS - Fix remaining issues with SoftMax layer
 * ConvNetJS - Implement more layers and missing parameters: some models need special layers, like elementwise sum, or convolution groups etc.
 * CaffeJS - Layer structure, do we need blobs or are layers enough?
 * CaffeJS - Nice documentation and more samples
