@@ -40,7 +40,7 @@ namespace Net {
 
     forward(V, is_training) {
       this.in_act = V;
-
+      this.resetGradient();
       var A = V.cloneAndZero();
       this.S_cache_ = V.cloneAndZero();
       var n2 = Math.floor(this.n / 2);
@@ -75,7 +75,6 @@ namespace Net {
     backward() {
       // evaluate gradient wrt data
       var V = this.in_act; // we need to set dw of this
-      V.dw = nj.zeros(V.w.length); // zero out gradient wrt data
       var A = this.out_act; // computed in forward pass 
 
       var n2 = Math.floor(this.n / 2);
@@ -100,7 +99,7 @@ namespace Net {
             }
 
             var ae_i = f0 - f1 * sum;
-            V.set_grad(x, y, i, ae_i);
+            V.add_grad(x, y, i, ae_i);
           }
         }
       }

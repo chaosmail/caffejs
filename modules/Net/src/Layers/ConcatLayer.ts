@@ -23,6 +23,7 @@ namespace Net {
     
     forward(Vs, is_training) {
       this.in_act = Vs;
+      this.resetGradient();
       var V2 = new Vol(this.out_sx, this.out_sy, this.out_depth, 0.0);
       var offset = 0;
       if (this.axis === 0) {
@@ -33,11 +34,11 @@ namespace Net {
         }
       }
       else {
-        for (var j = 0; j < Vs.length; j++) {
-          var V = Vs[j];
-          for (var d = 0; d < V.depth; d++)
-            for (var x = 0; x < V.sx; x++) {
-              for (var y = 0; y < V.sy; y++) {
+        for (let j = 0; j < Vs.length; j++) {
+          let V = Vs[j];
+          for (let d = 0; d < V.depth; d++)
+            for (let x = 0; x < V.sx; x++) {
+              for (let y = 0; y < V.sy; y++) {
                 V2.set(x, y, d + offset, V.get(x, y, d));
               }
             }
@@ -54,19 +55,20 @@ namespace Net {
       var offset = 0;
       if (this.axis === 0) {
         let V2dw = V2.dw;
-        for (let j = 0, len = Vs.length; j < len; ++j) {
+        for (let j = 0; j < Vs.length; j++) {
           let Vdw = Vs[j].dw;
-          V2dw.set(Vdw, offset);
+          Vdw = nj.add(Vdw, V2dw.slice(offset, offset + Vdw.length));
           offset += Vdw.length;
         }
       }
       else {
         for (let j = 0, len = Vs.length; j < len; ++j) {
           let V = Vs[j];
+          let Vdw = Vs[j].dw;
           for (let d = 0, depth = V.depth; d < depth; ++d)
             for (let x = 0, sx = V.sx; x < sx; ++x) {
               for (let y = 0, sy = V.sy; y < sy; ++y) {
-                V.set_grad(x, y, d, V2.get_grad(x, y, d + offset));
+                V.add_grad(x, y, d, V2.get_grad(x, y, d + offset));
               }
             }
           offset += V.depth;

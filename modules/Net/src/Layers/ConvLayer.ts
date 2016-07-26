@@ -59,6 +59,7 @@ namespace Net {
       // optimized code by @mdda that achieves 2x speedup over previous version
 
       this.in_act = V;
+      this.resetGradient();
       var A = new Vol(this.out_sx | 0, this.out_sy | 0, this.out_depth | 0, 0.0);
 
       var V_sx = V.sx | 0;
@@ -98,8 +99,6 @@ namespace Net {
 
     backward() {
       var V = this.in_act;
-      V.dw = nj.zeros(V.w.length); // zero out gradient wrt bottom data, we're about to fill it
-
       var V_sx = V.sx | 0;
       var V_sy = V.sy | 0;
       var xy_stride = this.stride | 0;

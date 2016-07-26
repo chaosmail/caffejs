@@ -26,6 +26,7 @@ namespace Net {
     
     forward (V, is_training) {
       this.in_act = V;
+      this.resetGradient();
       this.out_act = V;
       return this.out_act; // simply identity function for now
     }

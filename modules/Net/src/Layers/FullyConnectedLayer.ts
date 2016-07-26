@@ -57,6 +57,7 @@ namespace Net {
 
     forward(V, is_training) {
       this.in_act = V;
+      this.resetGradient();
       var A = new Vol(1, 1, this.out_depth, 0.0);
       var Vw = V.w;
       for (var i = 0; i < this.out_depth; ++i) {
@@ -74,7 +75,6 @@ namespace Net {
 
     backward() {
       var V = this.in_act;
-      V.dw = nj.zeros(V.w.length); // zero out the gradient in input Vol
 
       // compute gradient wrt weights and data
       for (var i = 0; i < this.out_depth; ++i) {

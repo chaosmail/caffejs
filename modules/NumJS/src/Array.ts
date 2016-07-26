@@ -32,7 +32,7 @@ namespace NumJS {
       return A;
     }
     else {
-      throw "Bad input shape";
+      throw new TypeError("Bad input shapes " + A.length + " " + B.length);
     }
   }
 
@@ -47,7 +47,7 @@ namespace NumJS {
       return A;
     }
     else {
-      throw "Bad input shape";
+      throw new TypeError("Bad input shape " + A.length + " " + B.length);
     }
   }
 
@@ -62,7 +62,7 @@ namespace NumJS {
       return A;
     }
     else {
-      throw "Bad input shape";
+      throw new TypeError("Bad input shape " + A.length + " " + B.length);
     }
   }
 
@@ -77,7 +77,7 @@ namespace NumJS {
       return A;
     }
     else {
-      throw "Bad input shape";
+      throw new TypeError("Bad input shape " + A.length + " " + B.length);
     }
   }
 
@@ -92,7 +92,7 @@ namespace NumJS {
       return A;
     }
     else {
-      throw "Bad input shape";
+      throw new TypeError("Bad input shape " + A.length + " " + B.length);
     }
   }
 }

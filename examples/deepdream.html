@@ -10,7 +10,7 @@
 
     <h2>DeepDream in the Browser</h2>
 
-    <p>This demo runs the famous DeepDream demo entirely in the browser using the pretrained GoogLeNet model from Caffe, Caffe.js and a fork of ConvNetJS. It's a JavaScript port from the <a href="https://github.com/google/deepdream/blob/master/dream.ipynb">original version</a> and performs the computation using a Caffe.js model in a webworker task in your browser.</p>
+    <p>This page runs the famous DeepDream demo entirely in the browser using the pretrained GoogLeNet model from Caffe and Caffe.js (which is based on <a target="_new" href="http://convnetjs.com">ConvNetJS</a>). It's a JavaScript port from the <a target="_new" href="https://github.com/google/deepdream/blob/master/dream.ipynb">original DeepDream demo</a> and performs the computation using a Caffe.js model in a webworker task in your browser. This page including all models and resources is hosted as a static page on Github.</p>
 
     <canvas id="image"></canvas>
     <br>
@@ -34,7 +34,7 @@
     <script>
       // We use this canvas and image
       var jil = ImgJS;
-      var imgUrl = "data/deepdream/sky_big.jpg";
+      var imgUrl = "data/deepdream/sky.jpg";
       var image;
       var canvas = document.getElementById('image');
       var params = {iter_n:10, octave_n:4, end:'inception_4c/output'};

@@ -25,6 +25,7 @@ namespace Net {
 
     forward(V, is_training) {
       this.in_act = V;
+      this.resetGradient();
 
       var A = new Vol(1, 1, this.out_depth, 0.0);
 
@@ -59,12 +60,11 @@ namespace Net {
 
       // compute and accumulate gradient wrt weights and bias of this layer
       var x = this.in_act;
-      x.dw = nj.zeros(x.w.length); // zero out the gradient of input Vol
 
       for (var i = 0; i < this.out_depth; i++) {
         var indicator = i === y ? 1.0 : 0.0;
         var mul = -(indicator - this.es[i]);
-        x.dw[i] = mul;
+        x.dw[i] += mul;
       }
 
       // loss is the class negative log likelihood

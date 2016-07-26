@@ -39,7 +39,7 @@ var NumJS;
             return A;
         }
         else {
-            throw "Bad input shape";
+            throw new TypeError("Bad input shapes " + A.length + " " + B.length);
         }
     }
     NumJS.add = add;
@@ -56,7 +56,7 @@ var NumJS;
             return A;
         }
         else {
-            throw "Bad input shape";
+            throw new TypeError("Bad input shape " + A.length + " " + B.length);
         }
     }
     NumJS.sub = sub;
@@ -73,7 +73,7 @@ var NumJS;
             return A;
         }
         else {
-            throw "Bad input shape";
+            throw new TypeError("Bad input shape " + A.length + " " + B.length);
         }
     }
     NumJS.mul = mul;
@@ -90,7 +90,7 @@ var NumJS;
             return A;
         }
         else {
-            throw "Bad input shape";
+            throw new TypeError("Bad input shape " + A.length + " " + B.length);
         }
     }
     NumJS.div = div;
@@ -107,7 +107,7 @@ var NumJS;
             return A;
         }
         else {
-            throw "Bad input shape";
+            throw new TypeError("Bad input shape " + A.length + " " + B.length);
         }
     }
     NumJS.addScaled = addScaled;
@@ -702,6 +702,7 @@ var Net;
 /// <reference path="../Utils.ts" />
 var Net;
 (function (Net) {
+    var nj = NumJS;
     var BaseLayer = (function () {
         function BaseLayer(opt) {
             this.in_depth = 1;
@@ -728,6 +729,16 @@ var Net;
             this.out_sx = this.in_sx;
             this.out_sy = this.in_sy;
             this.out_depth = this.in_depth;
+        };
+        BaseLayer.prototype.resetGradient = function () {
+            if (this.in_act instanceof Array) {
+                for (var j = 0; j < this.in_act.length; j++) {
+                    this.in_act[j].dw = nj.zeros(this.in_act[j].w.length);
+                }
+            }
+            else {
+                this.in_act.dw = nj.zeros(this.in_act.w.length);
+            }
         };
         BaseLayer.prototype.getNumParameters = function () {
             return [0, 0];
@@ -782,6 +793,7 @@ var Net;
         }
         InputLayer.prototype.forward = function (V, is_training) {
             this.in_act = V;
+            this.resetGradient();
             this.out_act = V;
             return this.out_act; // simply identity function for now
         };
@@ -804,6 +816,7 @@ var Net;
         }
         ConcatLayer.prototype.forward = function (Vs, is_training) {
             this.in_act = Vs;
+            this.resetGradient();
             var V2 = new Net.Vol(this.out_sx, this.out_sy, this.out_depth, 0.0);
             var offset = 0;
             if (this.axis === 0) {
@@ -814,8 +827,8 @@ var Net;
                 }
             }
             else {
-                for (var j = 0; j < Vs.length; j++) {
-                    var V = Vs[j];
+                for (var j_1 = 0; j_1 < Vs.length; j_1++) {
+                    var V = Vs[j_1];
                     for (var d = 0; d < V.depth; d++)
                         for (var x = 0; x < V.sx; x++) {
                             for (var y = 0; y < V.sy; y++) {
@@ -834,19 +847,20 @@ var Net;
             var offset = 0;
             if (this.axis === 0) {
                 var V2dw = V2.dw;
-                for (var j = 0, len = Vs.length; j < len; ++j) {
+                for (var j = 0; j < Vs.length; j++) {
                     var Vdw = Vs[j].dw;
-                    V2dw.set(Vdw, offset);
+                    Vdw = nj.add(Vdw, V2dw.slice(offset, offset + Vdw.length));
                     offset += Vdw.length;
                 }
             }
             else {
                 for (var j = 0, len = Vs.length; j < len; ++j) {
                     var V = Vs[j];
+                    var Vdw = Vs[j].dw;
                     for (var d = 0, depth = V.depth; d < depth; ++d)
                         for (var x = 0, sx = V.sx; x < sx; ++x) {
                             for (var y = 0, sy = V.sy; y < sy; ++y) {
-                                V.set_grad(x, y, d, V2.get_grad(x, y, d + offset));
+                                V.add_grad(x, y, d, V2.get_grad(x, y, d + offset));
                             }
                         }
                     offset += V.depth;
@@ -888,7 +902,6 @@ var Net;
 /// <reference path="BaseLayer.ts" />
 var Net;
 (function (Net) {
-    var nj = NumJS;
     var ConvLayer = (function (_super) {
         __extends(ConvLayer, _super);
         function ConvLayer(opt) {
@@ -919,6 +932,7 @@ var Net;
         ConvLayer.prototype.forward = function (V, is_training) {
             // optimized code by @mdda that achieves 2x speedup over previous version
             this.in_act = V;
+            this.resetGradient();
             var A = new Net.Vol(this.out_sx | 0, this.out_sy | 0, this.out_depth | 0, 0.0);
             var V_sx = V.sx | 0;
             var V_sy = V.sy | 0;
@@ -954,7 +968,6 @@ var Net;
         };
         ConvLayer.prototype.backward = function () {
             var V = this.in_act;
-            V.dw = nj.zeros(V.w.length); // zero out gradient wrt bottom data, we're about to fill it
             var V_sx = V.sx | 0;
             var V_sy = V.sy | 0;
             var xy_stride = this.stride | 0;
@@ -1089,6 +1102,7 @@ var Net;
         }
         PoolLayer.prototype.forward = function (V, is_training) {
             this.in_act = V;
+            this.resetGradient();
             this.switchx = nj.zeros(this.out_sx * this.out_sy * this.out_depth);
             this.switchy = nj.zeros(this.out_sx * this.out_sy * this.out_depth);
             var A = new Net.Vol(this.out_sx, this.out_sy, this.out_depth, 0.0);
@@ -1157,7 +1171,6 @@ var Net;
             // pooling layers have no parameters, so simply compute 
             // gradient wrt data here
             var V = this.in_act;
-            V.dw = nj.zeros(V.w.length); // zero out gradient wrt data
             var A = this.out_act; // computed in forward pass 
             if (this.pool === 'AVE') {
             }
@@ -1228,7 +1241,6 @@ var Net;
 /// <reference path="BaseLayer.ts" />
 var Net;
 (function (Net) {
-    var nj = NumJS;
     var FullyConnectedLayer = (function (_super) {
         __extends(FullyConnectedLayer, _super);
         function FullyConnectedLayer(opt) {
@@ -1262,6 +1274,7 @@ var Net;
         }
         FullyConnectedLayer.prototype.forward = function (V, is_training) {
             this.in_act = V;
+            this.resetGradient();
             var A = new Net.Vol(1, 1, this.out_depth, 0.0);
             var Vw = V.w;
             for (var i = 0; i < this.out_depth; ++i) {
@@ -1278,7 +1291,6 @@ var Net;
         };
         FullyConnectedLayer.prototype.backward = function () {
             var V = this.in_act;
-            V.dw = nj.zeros(V.w.length); // zero out the gradient in input Vol
             // compute gradient wrt weights and data
             for (var i = 0; i < this.out_depth; ++i) {
                 var tfi = this.filters[i];
@@ -1370,6 +1382,7 @@ var Net;
         DropoutLayer.prototype.forward = function (V, is_training) {
             if (is_training === void 0) { is_training = false; }
             this.in_act = V;
+            this.resetGradient();
             this.dropped = nj.zeros(this.out_sx * this.out_sy * this.out_depth, Int8Array);
             var V2 = V.clone();
             var N = V.w.length;
@@ -1396,10 +1409,9 @@ var Net;
             var V = this.in_act; // we need to set dw of this
             var chain_grad = this.out_act;
             var N = V.w.length;
-            V.dw = nj.zeros(N); // zero out gradient wrt data
             for (var i = 0; i < N; i++) {
                 if (this.dropped[i] !== 1) {
-                    V.dw[i] = chain_grad.dw[i]; // copy over the gradient
+                    V.dw[i] += chain_grad.dw[i]; // copy over the gradient
                 }
             }
         };
@@ -1432,6 +1444,7 @@ var Net;
         }
         TanhLayer.prototype.forward = function (V, is_training) {
             this.in_act = V;
+            this.resetGradient();
             var V2 = V.cloneAndZero();
             var N = V.w.length;
             for (var i = 0; i < N; i++) {
@@ -1444,10 +1457,9 @@ var Net;
             var V = this.in_act; // we need to set dw of this
             var V2 = this.out_act;
             var N = V.w.length;
-            V.dw = nj.zeros(N); // zero out gradient wrt data
             for (var i = 0; i < N; i++) {
                 var v2wi = V2.w[i];
-                V.dw[i] = (1.0 - v2wi * v2wi) * V2.dw[i];
+                V.dw[i] += (1.0 - v2wi * v2wi) * V2.dw[i];
             }
         };
         return TanhLayer;
@@ -1473,6 +1485,7 @@ var Net;
         }
         MaxoutLayer.prototype.forward = function (V, is_training) {
             this.in_act = V;
+            this.resetGradient();
             this.switches = nj.zeros(this.out_sx * this.out_sy * this.out_depth, Uint32Array); // useful for backprop
             var N = this.out_depth;
             var V2 = new Net.Vol(this.out_sx, this.out_sy, this.out_depth, 0.0);
@@ -1524,12 +1537,11 @@ var Net;
             var V = this.in_act; // we need to set dw of this
             var V2 = this.out_act;
             var N = this.out_depth;
-            V.dw = nj.zeros(V.w.length); // zero out gradient wrt data
             // pass the gradient through the appropriate switch
             if (this.out_sx === 1 && this.out_sy === 1) {
                 for (var i = 0; i < N; i++) {
                     var chain_grad = V2.dw[i];
-                    V.dw[this.switches[i]] = chain_grad;
+                    V.dw[this.switches[i]] += chain_grad;
                 }
             }
             else {
@@ -1539,7 +1551,7 @@ var Net;
                     for (var y = 0; y < V2.sy; y++) {
                         for (var i = 0; i < N; i++) {
                             var chain_grad = V2.get_grad(x, y, i);
-                            V.set_grad(x, y, this.switches[n], chain_grad);
+                            V.add_grad(x, y, this.switches[n], chain_grad);
                             n++;
                         }
                     }
@@ -1572,7 +1584,6 @@ var Net;
 /// <reference path="BaseLayer.ts" />
 var Net;
 (function (Net) {
-    var nj = NumJS;
     // Implements ReLU nonlinearity elementwise
     // x -> max(0, x)
     // the output is in [0, inf)
@@ -1585,6 +1596,7 @@ var Net;
         }
         ReluLayer.prototype.forward = function (V, is_training) {
             this.in_act = V;
+            this.resetGradient();
             var V2 = V.clone();
             var N = V.w.length;
             var V2w = V2.w;
@@ -1599,12 +1611,11 @@ var Net;
             var V = this.in_act; // we need to set dw of this
             var V2 = this.out_act;
             var N = V.w.length;
-            V.dw = nj.zeros(N); // zero out gradient wrt data
             for (var i = 0; i < N; i++) {
                 if (V2.w[i] <= 0)
                     V.dw[i] = 0; // threshold
                 else
-                    V.dw[i] = V2.dw[i];
+                    V.dw[i] += V2.dw[i];
             }
         };
         return ReluLayer;
@@ -1614,7 +1625,6 @@ var Net;
 /// <reference path="BaseLayer.ts" />
 var Net;
 (function (Net) {
-    var nj = NumJS;
     // Implements Sigmoid nnonlinearity elementwise
     // x -> 1/(1+e^(-x))
     // so the output is between 0 and 1.
@@ -1627,6 +1637,7 @@ var Net;
         }
         SigmoidLayer.prototype.forward = function (V, is_training) {
             this.in_act = V;
+            this.resetGradient();
             var V2 = V.cloneAndZero();
             var N = V.w.length;
             var V2w = V2.w;
@@ -1641,10 +1652,9 @@ var Net;
             var V = this.in_act; // we need to set dw of this
             var V2 = this.out_act;
             var N = V.w.length;
-            V.dw = nj.zeros(N); // zero out gradient wrt data
             for (var i = 0; i < N; i++) {
                 var v2wi = V2.w[i];
-                V.dw[i] = v2wi * (1.0 - v2wi) * V2.dw[i];
+                V.dw[i] += v2wi * (1.0 - v2wi) * V2.dw[i];
             }
         };
         return SigmoidLayer;
@@ -1654,7 +1664,6 @@ var Net;
 /// <reference path="BaseLayer.ts" />
 var Net;
 (function (Net) {
-    var nj = NumJS;
     // implements an L2 regression cost layer,
     // so penalizes \sum_i(||x_i - y_i||^2), where x is its input
     // and y is the user-provided array of "correct" values.
@@ -1667,6 +1676,7 @@ var Net;
         }
         RegressionLayer.prototype.forward = function (V, is_training) {
             this.in_act = V;
+            this.resetGradient();
             this.out_act = V;
             return V; // identity function
         };
@@ -1677,7 +1687,6 @@ var Net;
         RegressionLayer.prototype.backward = function (y) {
             // compute and accumulate gradient wrt weights and bias of this layer
             var x = this.in_act;
-            x.dw = nj.zeros(x.w.length); // zero out the gradient of input Vol
             var loss = 0.0;
             if (y instanceof Float32Array) {
                 for (var i = 0; i < this.out_depth; i++) {
@@ -1744,6 +1753,7 @@ var Net;
         }
         SoftmaxLayer.prototype.forward = function (V, is_training) {
             this.in_act = V;
+            this.resetGradient();
             var A = new Net.Vol(1, 1, this.out_depth, 0.0);
             // compute max activation
             var as = V.w;
@@ -1772,11 +1782,10 @@ var Net;
         SoftmaxLayer.prototype.backward = function (y) {
             // compute and accumulate gradient wrt weights and bias of this layer
             var x = this.in_act;
-            x.dw = nj.zeros(x.w.length); // zero out the gradient of input Vol
             for (var i = 0; i < this.out_depth; i++) {
                 var indicator = i === y ? 1.0 : 0.0;
                 var mul = -(indicator - this.es[i]);
-                x.dw[i] = mul;
+                x.dw[i] += mul;
             }
             // loss is the class negative log likelihood
             return -Math.log(this.es[y]);
@@ -1809,7 +1818,6 @@ var Net;
 /// <reference path="BaseLayer.ts" />
 var Net;
 (function (Net) {
-    var nj = NumJS;
     // implements an L2 regression cost layer,
     // so penalizes \sum_i(||x_i - y_i||^2), where x is its input
     // and y is the user-provided array of "correct" values.
@@ -1822,13 +1830,13 @@ var Net;
         }
         SVMLayer.prototype.forward = function (V, is_training) {
             this.in_act = V;
+            this.resetGradient();
             this.out_act = V;
             return V; // identity function
         };
         SVMLayer.prototype.backward = function (y) {
             // compute and accumulate gradient wrt weights and bias of this layer
             var x = this.in_act;
-            x.dw = nj.zeros(x.w.length); // zero out the gradient of input Vol
             // we're using structured loss here, which means that the score
             // of the ground truth should be higher than the score of any other 
             // class, by a margin
@@ -1877,7 +1885,6 @@ var Net;
 /// <reference path="BaseLayer.ts" />
 var Net;
 (function (Net) {
-    var nj = NumJS;
     // a bit experimental layer for now. I think it works but I'm not 100%
     // the gradient check is a bit funky. I'll look into this a bit later.
     // Local Response Normalization in window, along depths of volumes
@@ -1899,6 +1906,7 @@ var Net;
         }
         LocalResponseNormalizationLayer.prototype.forward = function (V, is_training) {
             this.in_act = V;
+            this.resetGradient();
             var A = V.cloneAndZero();
             this.S_cache_ = V.cloneAndZero();
             var n2 = Math.floor(this.n / 2);
@@ -1928,7 +1936,6 @@ var Net;
         LocalResponseNormalizationLayer.prototype.backward = function () {
             // evaluate gradient wrt data
             var V = this.in_act; // we need to set dw of this
-            V.dw = nj.zeros(V.w.length); // zero out gradient wrt data
             var A = this.out_act; // computed in forward pass 
             var n2 = Math.floor(this.n / 2);
             for (var x = 0; x < V.sx; x++) {
@@ -1948,7 +1955,7 @@ var Net;
                             sum += be_j * b_j / scale_j;
                         }
                         var ae_i = f0 - f1 * sum;
-                        V.set_grad(x, y, i, ae_i);
+                        V.add_grad(x, y, i, ae_i);
                     }
                 }
             }

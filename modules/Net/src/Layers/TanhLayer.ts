@@ -22,6 +22,7 @@ namespace Net {
 
     forward(V, is_training) {
       this.in_act = V;
+      this.resetGradient();
       var V2 = V.cloneAndZero();
       var N = V.w.length;
       for (var i = 0; i < N; i++) {
@@ -35,10 +36,9 @@ namespace Net {
       var V = this.in_act; // we need to set dw of this
       var V2 = this.out_act;
       var N = V.w.length;
-      V.dw = nj.zeros(N); // zero out gradient wrt data
       for (var i = 0; i < N; i++) {
         var v2wi = V2.w[i];
-        V.dw[i] = (1.0 - v2wi * v2wi) * V2.dw[i];
+        V.dw[i] += (1.0 - v2wi * v2wi) * V2.dw[i];
       }
     }
   }

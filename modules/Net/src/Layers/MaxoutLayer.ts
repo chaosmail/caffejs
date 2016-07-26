@@ -29,6 +29,7 @@ namespace Net {
 
     forward(V, is_training) {
       this.in_act = V;
+      this.resetGradient();
       this.switches = nj.zeros(this.out_sx * this.out_sy * this.out_depth, Uint32Array); // useful for backprop
       
       var N = this.out_depth;
@@ -83,13 +84,12 @@ namespace Net {
       var V = this.in_act; // we need to set dw of this
       var V2 = this.out_act;
       var N = this.out_depth;
-      V.dw = nj.zeros(V.w.length); // zero out gradient wrt data
 
       // pass the gradient through the appropriate switch
       if (this.out_sx === 1 && this.out_sy === 1) {
         for (var i = 0; i < N; i++) {
           var chain_grad = V2.dw[i];
-          V.dw[this.switches[i]] = chain_grad;
+          V.dw[this.switches[i]] += chain_grad;
         }
       } else {
         // bleh okay, lets do this the hard way
@@ -98,7 +98,7 @@ namespace Net {
           for (var y = 0; y < V2.sy; y++) {
             for (var i = 0; i < N; i++) {
               var chain_grad = V2.get_grad(x, y, i);
-              V.set_grad(x, y, this.switches[n], chain_grad);
+              V.add_grad(x, y, this.switches[n], chain_grad);
               n++;
             }
           }

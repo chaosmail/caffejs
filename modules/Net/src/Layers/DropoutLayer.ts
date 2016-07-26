@@ -30,6 +30,7 @@ namespace Net {
 
     forward(V, is_training = false) {
       this.in_act = V;
+      this.resetGradient();
       this.dropped = nj.zeros(this.out_sx * this.out_sy * this.out_depth, Int8Array);
       var V2 = V.clone();
       var N = V.w.length;
@@ -56,10 +57,9 @@ namespace Net {
       var V = this.in_act; // we need to set dw of this
       var chain_grad = this.out_act;
       var N = V.w.length;
-      V.dw = nj.zeros(N); // zero out gradient wrt data
       for (var i = 0; i < N; i++) {
         if (this.dropped[i] !== 1) {
-          V.dw[i] = chain_grad.dw[i]; // copy over the gradient
+          V.dw[i] += chain_grad.dw[i]; // copy over the gradient
         }
       }
     }

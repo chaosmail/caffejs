@@ -48,6 +48,7 @@ namespace Net {
     
     forward(V, is_training) {
       this.in_act = V;
+      this.resetGradient();
       this.switchx = nj.zeros(this.out_sx * this.out_sy * this.out_depth);
       this.switchy = nj.zeros(this.out_sx * this.out_sy * this.out_depth);
 
@@ -116,7 +117,6 @@ namespace Net {
       // pooling layers have no parameters, so simply compute 
       // gradient wrt data here
       var V = this.in_act;
-      V.dw = nj.zeros(V.w.length); // zero out gradient wrt data
       var A = this.out_act; // computed in forward pass 
 
       if (this.pool === 'AVE') {

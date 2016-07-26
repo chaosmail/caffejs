@@ -5,6 +5,8 @@
 
 namespace Net {
 
+  import nj = NumJS;
+
   export class BaseLayer {
     public in_act: Vol | Vol[];
     public out_act: Vol;
@@ -45,6 +47,17 @@ namespace Net {
       this.out_sx = this.in_sx;
       this.out_sy = this.in_sy;
       this.out_depth = this.in_depth;
+    }
+
+    resetGradient() {
+      if (this.in_act instanceof Array) {
+        for (var j = 0; j < (<Vol[]>this.in_act).length; j++) {
+          (<Vol[]>this.in_act)[j].dw = nj.zeros((<Vol[]>this.in_act)[j].w.length);
+        }
+      }
+      else {
+        (<Vol>this.in_act).dw = nj.zeros((<Vol>this.in_act).w.length);
+      }
     }
 
     getNumParameters() {

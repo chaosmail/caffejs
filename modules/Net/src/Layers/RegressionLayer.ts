@@ -24,6 +24,7 @@ namespace Net {
 
     forward(V, is_training) {
       this.in_act = V;
+      this.resetGradient();
       this.out_act = V;
       return V; // identity function
     }
@@ -36,7 +37,6 @@ namespace Net {
 
       // compute and accumulate gradient wrt weights and bias of this layer
       var x = this.in_act;
-      x.dw = nj.zeros(x.w.length); // zero out the gradient of input Vol
       var loss = 0.0;
       if (y instanceof Float32Array) {
         for (let i = 0; i < this.out_depth; i++) {
