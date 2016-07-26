@@ -47,19 +47,19 @@ Here is a break-down of **AlexNet** computed with CaffeJS.
 3x227x227 :: INPUT data
 96x55x55 :: CONV conv1 96x11x11 Stride 4 Pad 0 => 34,944 parameters
 96x55x55 :: RELU relu1
-96x55x55 :: LRN norm1
-96x27x27 :: POOL pool1 MAX 3x3 Stride 2 Pad 0
+96x55x55 :: LRN norm1 alpha 0.0001 beta 0.75 k 1 n 5
+96x27x27 :: MAX POOL pool1 3x3 Stride 2 Pad 0
 256x27x27 :: CONV conv2 256x5x5 Stride 1 Pad 2 => 614,656 parameters
 256x27x27 :: RELU relu2
-256x27x27 :: LRN norm2
-256x13x13 :: POOL pool2 MAX 3x3 Stride 2 Pad 0
+256x27x27 :: LRN norm2 alpha 0.0001 beta 0.75 k 1 n 5
+256x13x13 :: MAX POOL pool2 3x3 Stride 2 Pad 0
 384x13x13 :: CONV conv3 384x3x3 Stride 1 Pad 1 => 885,120 parameters
 384x13x13 :: RELU relu3
 384x13x13 :: CONV conv4 384x3x3 Stride 1 Pad 1 => 1,327,488 parameters
 384x13x13 :: RELU relu4
 256x13x13 :: CONV conv5 256x3x3 Stride 1 Pad 1 => 884,992 parameters
 256x13x13 :: RELU relu5
-256x6x6 :: POOL pool5 MAX 3x3 Stride 2 Pad 0
+256x6x6 :: MAX POOL pool5 3x3 Stride 2 Pad 0
 4096x1x1 :: FC fc6 => 37,752,832 parameters
 4096x1x1 :: DROPOUT drop6
 4096x1x1 :: RELU relu6
@@ -70,38 +70,7 @@ Here is a break-down of **AlexNet** computed with CaffeJS.
 1000x1x1 :: SOFTMAX prob
 ---
 Total number of layers 24
-Total number of params 62,378,344 (memory: 249.513376Mb)
-```
-
-Here is a break-down of **VGG CNN S** computed with CaffeJS.
-
-```
-3x224x224 :: INPUT data
-96x110x110 :: CONV conv1 96x7x7 Stride 2 Pad 0 => 14,208 parameters
-96x110x110 :: RELU relu1
-96x110x110 :: LRN norm1
-96x37x37 :: POOL pool1 MAX 3x3 Stride 3 Pad 0
-256x33x33 :: CONV conv2 256x5x5 Stride 1 Pad 0 => 614,656 parameters
-256x33x33 :: RELU relu2
-256x17x17 :: POOL pool2 MAX 2x2 Stride 2 Pad 0
-512x17x17 :: CONV conv3 512x3x3 Stride 1 Pad 1 => 1,180,160 parameters
-512x17x17 :: RELU relu3
-512x17x17 :: CONV conv4 512x3x3 Stride 1 Pad 1 => 2,359,808 parameters
-512x17x17 :: RELU relu4
-512x17x17 :: CONV conv5 512x3x3 Stride 1 Pad 1 => 2,359,808 parameters
-512x17x17 :: RELU relu5
-512x6x6 :: POOL pool5 MAX 3x3 Stride 3 Pad 0
-4096x1x1 :: FC fc6 => 75,501,568 parameters
-4096x1x1 :: DROPOUT drop6
-4096x1x1 :: RELU relu6
-4096x1x1 :: FC fc7 => 16,781,312 parameters
-4096x1x1 :: DROPOUT drop7
-4096x1x1 :: RELU relu7
-1000x1x1 :: FC fc8 => 4,097,000 parameters
-1000x1x1 :: SOFTMAX prob
----
-Total number of layers 23
-Total number of params 102,908,520 (memory: 411.63408Mb):
+Total number of params 62,378,344 (memory: 249.513376Mb): 
 ```
 
 Here is a break-down of **GoogLeNet** computed with CaffeJS (please note, that the layers of each inception module are not sequential as shown here but parallel).
@@ -110,15 +79,15 @@ Here is a break-down of **GoogLeNet** computed with CaffeJS (please note, that t
 3x224x224 :: INPUT data
 64x113x113 :: CONV conv1/7x7_s2 64x7x7 Stride 2 Pad 3 => 9,472 parameters
 64x113x113 :: RELU conv1/relu_7x7
-64x56x56 :: POOL pool1/3x3_s2 MAX 3x3 Stride 2 Pad 0
-64x56x56 :: LRN pool1/norm1
+64x56x56 :: MAX POOL pool1/3x3_s2 3x3 Stride 2 Pad 0
+64x56x56 :: LRN pool1/norm1 alpha 0.0001 beta 0.75 k 1 n 5
 64x56x56 :: CONV conv2/3x3_reduce 64x1x1 Stride 1 Pad 0 => 4,160 parameters
 64x56x56 :: RELU conv2/relu_3x3_reduce
 192x56x56 :: CONV conv2/3x3 192x3x3 Stride 1 Pad 1 => 110,784 parameters
 192x56x56 :: RELU conv2/relu_3x3
-192x56x56 :: LRN conv2/norm2
-192x28x28 :: POOL pool2/3x3_s2 MAX 3x3 Stride 2 Pad 0
-192x28x28 :: POOL inception_3a/pool MAX 3x3 Stride 1 Pad 1
+192x56x56 :: LRN conv2/norm2 alpha 0.0001 beta 0.75 k 1 n 5
+192x28x28 :: MAX POOL pool2/3x3_s2 3x3 Stride 2 Pad 0
+192x28x28 :: MAX POOL inception_3a/pool 3x3 Stride 1 Pad 1
 32x28x28 :: CONV inception_3a/pool_proj 32x1x1 Stride 1 Pad 0 => 6,176 parameters
 32x28x28 :: RELU inception_3a/relu_pool_proj
 16x28x28 :: CONV inception_3a/5x5_reduce 16x1x1 Stride 1 Pad 0 => 3,088 parameters
@@ -132,7 +101,7 @@ Here is a break-down of **GoogLeNet** computed with CaffeJS (please note, that t
 64x28x28 :: CONV inception_3a/1x1 64x1x1 Stride 1 Pad 0 => 12,352 parameters
 64x28x28 :: RELU inception_3a/relu_1x1
 256x28x28 :: CONCAT inception_3a/output
-256x28x28 :: POOL inception_3b/pool MAX 3x3 Stride 1 Pad 1
+256x28x28 :: MAX POOL inception_3b/pool 3x3 Stride 1 Pad 1
 64x28x28 :: CONV inception_3b/pool_proj 64x1x1 Stride 1 Pad 0 => 16,448 parameters
 64x28x28 :: RELU inception_3b/relu_pool_proj
 32x28x28 :: CONV inception_3b/5x5_reduce 32x1x1 Stride 1 Pad 0 => 8,224 parameters
@@ -146,8 +115,8 @@ Here is a break-down of **GoogLeNet** computed with CaffeJS (please note, that t
 128x28x28 :: CONV inception_3b/1x1 128x1x1 Stride 1 Pad 0 => 32,896 parameters
 128x28x28 :: RELU inception_3b/relu_1x1
 480x28x28 :: CONCAT inception_3b/output
-480x14x14 :: POOL pool3/3x3_s2 MAX 3x3 Stride 2 Pad 0
-480x14x14 :: POOL inception_4a/pool MAX 3x3 Stride 1 Pad 1
+480x14x14 :: MAX POOL pool3/3x3_s2 3x3 Stride 2 Pad 0
+480x14x14 :: MAX POOL inception_4a/pool 3x3 Stride 1 Pad 1
 64x14x14 :: CONV inception_4a/pool_proj 64x1x1 Stride 1 Pad 0 => 30,784 parameters
 64x14x14 :: RELU inception_4a/relu_pool_proj
 16x14x14 :: CONV inception_4a/5x5_reduce 16x1x1 Stride 1 Pad 0 => 7,696 parameters
@@ -161,7 +130,7 @@ Here is a break-down of **GoogLeNet** computed with CaffeJS (please note, that t
 192x14x14 :: CONV inception_4a/1x1 192x1x1 Stride 1 Pad 0 => 92,352 parameters
 192x14x14 :: RELU inception_4a/relu_1x1
 512x14x14 :: CONCAT inception_4a/output
-512x14x14 :: POOL inception_4b/pool MAX 3x3 Stride 1 Pad 1
+512x14x14 :: MAX POOL inception_4b/pool 3x3 Stride 1 Pad 1
 64x14x14 :: CONV inception_4b/pool_proj 64x1x1 Stride 1 Pad 0 => 32,832 parameters
 64x14x14 :: RELU inception_4b/relu_pool_proj
 24x14x14 :: CONV inception_4b/5x5_reduce 24x1x1 Stride 1 Pad 0 => 12,312 parameters
@@ -175,7 +144,7 @@ Here is a break-down of **GoogLeNet** computed with CaffeJS (please note, that t
 160x14x14 :: CONV inception_4b/1x1 160x1x1 Stride 1 Pad 0 => 82,080 parameters
 160x14x14 :: RELU inception_4b/relu_1x1
 512x14x14 :: CONCAT inception_4b/output
-512x14x14 :: POOL inception_4c/pool MAX 3x3 Stride 1 Pad 1
+512x14x14 :: MAX POOL inception_4c/pool 3x3 Stride 1 Pad 1
 64x14x14 :: CONV inception_4c/pool_proj 64x1x1 Stride 1 Pad 0 => 32,832 parameters
 64x14x14 :: RELU inception_4c/relu_pool_proj
 24x14x14 :: CONV inception_4c/5x5_reduce 24x1x1 Stride 1 Pad 0 => 12,312 parameters
@@ -189,7 +158,7 @@ Here is a break-down of **GoogLeNet** computed with CaffeJS (please note, that t
 128x14x14 :: CONV inception_4c/1x1 128x1x1 Stride 1 Pad 0 => 65,664 parameters
 128x14x14 :: RELU inception_4c/relu_1x1
 512x14x14 :: CONCAT inception_4c/output
-512x14x14 :: POOL inception_4d/pool MAX 3x3 Stride 1 Pad 1
+512x14x14 :: MAX POOL inception_4d/pool 3x3 Stride 1 Pad 1
 64x14x14 :: CONV inception_4d/pool_proj 64x1x1 Stride 1 Pad 0 => 32,832 parameters
 64x14x14 :: RELU inception_4d/relu_pool_proj
 32x14x14 :: CONV inception_4d/5x5_reduce 32x1x1 Stride 1 Pad 0 => 16,416 parameters
@@ -203,7 +172,7 @@ Here is a break-down of **GoogLeNet** computed with CaffeJS (please note, that t
 112x14x14 :: CONV inception_4d/1x1 112x1x1 Stride 1 Pad 0 => 57,456 parameters
 112x14x14 :: RELU inception_4d/relu_1x1
 528x14x14 :: CONCAT inception_4d/output
-528x14x14 :: POOL inception_4e/pool MAX 3x3 Stride 1 Pad 1
+528x14x14 :: MAX POOL inception_4e/pool 3x3 Stride 1 Pad 1
 128x14x14 :: CONV inception_4e/pool_proj 128x1x1 Stride 1 Pad 0 => 67,712 parameters
 128x14x14 :: RELU inception_4e/relu_pool_proj
 32x14x14 :: CONV inception_4e/5x5_reduce 32x1x1 Stride 1 Pad 0 => 16,928 parameters
@@ -217,8 +186,8 @@ Here is a break-down of **GoogLeNet** computed with CaffeJS (please note, that t
 256x14x14 :: CONV inception_4e/1x1 256x1x1 Stride 1 Pad 0 => 135,424 parameters
 256x14x14 :: RELU inception_4e/relu_1x1
 832x14x14 :: CONCAT inception_4e/output
-832x7x7 :: POOL pool4/3x3_s2 MAX 3x3 Stride 2 Pad 0
-832x7x7 :: POOL inception_5a/pool MAX 3x3 Stride 1 Pad 1
+832x7x7 :: MAX POOL pool4/3x3_s2 3x3 Stride 2 Pad 0
+832x7x7 :: MAX POOL inception_5a/pool 3x3 Stride 1 Pad 1
 128x7x7 :: CONV inception_5a/pool_proj 128x1x1 Stride 1 Pad 0 => 106,624 parameters
 128x7x7 :: RELU inception_5a/relu_pool_proj
 32x7x7 :: CONV inception_5a/5x5_reduce 32x1x1 Stride 1 Pad 0 => 26,656 parameters
@@ -232,7 +201,7 @@ Here is a break-down of **GoogLeNet** computed with CaffeJS (please note, that t
 256x7x7 :: CONV inception_5a/1x1 256x1x1 Stride 1 Pad 0 => 213,248 parameters
 256x7x7 :: RELU inception_5a/relu_1x1
 832x7x7 :: CONCAT inception_5a/output
-832x7x7 :: POOL inception_5b/pool MAX 3x3 Stride 1 Pad 1
+832x7x7 :: MAX POOL inception_5b/pool 3x3 Stride 1 Pad 1
 128x7x7 :: CONV inception_5b/pool_proj 128x1x1 Stride 1 Pad 0 => 106,624 parameters
 128x7x7 :: RELU inception_5b/relu_pool_proj
 48x7x7 :: CONV inception_5b/5x5_reduce 48x1x1 Stride 1 Pad 0 => 39,984 parameters
@@ -246,7 +215,7 @@ Here is a break-down of **GoogLeNet** computed with CaffeJS (please note, that t
 384x7x7 :: CONV inception_5b/1x1 384x1x1 Stride 1 Pad 0 => 319,872 parameters
 384x7x7 :: RELU inception_5b/relu_1x1
 1024x7x7 :: CONCAT inception_5b/output
-1024x1x1 :: POOL pool5/7x7_s1 AVE 7x7 Stride 1 Pad 0
+1024x1x1 :: AVE POOL pool5/7x7_s1 7x7 Stride 1 Pad 0
 1024x1x1 :: DROPOUT pool5/drop_7x7_s1
 1000x1x1 :: FC loss3/classifier => 1,025,000 parameters
 1000x1x1 :: SOFTMAX prob
