@@ -262,10 +262,15 @@ You can find the source code in the `modules/` directory where I organize in 5 m
 
 ### What's left to do
 
-* ConvNetJS - Fix remaining issues with SoftMax layer
-* ConvNetJS - Implement more layers and missing parameters: some models need special layers, like elementwise sum, or convolution groups etc.
-* CaffeJS - Layer structure, do we need blobs or are layers enough?
-* CaffeJS - Nice documentation and more samples
+* Debug and fix remaining issues with SoftMax layer
+* Implement AVE pooling backward pass
+* Implement more layers and missing parameters: some models need special layers, like elementwise sum, or convolution groups etc.
+* Extract weights directly from *.caffemodel file (instead of converting to intermediate binary format)
+* Nice documentation and more samples
+* Write tests
+* Rename FilterDrawer to ActivationDrawer, implement FilterDrawer to visualize filters
+* Auto-scale the filters and activations to a meaningful output dimension
+* Publish weights on Dropbox, and make them download script using curl
 
 ## License
 

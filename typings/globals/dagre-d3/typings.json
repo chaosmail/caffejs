@@ -1,8 +1,0 @@
-{
-  "resolution": "main",
-  "tree": {
-    "src": "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/82c2863f8e669d12c2ffec3a4ae716de76e0caf8/dagre-d3/dagre-d3.d.ts",
-    "raw": "registry:dt/dagre-d3#0.0.0+20160620231311",
-    "typings": "https://raw.githubusercontent.com/DefinitelyTyped/DefinitelyTyped/82c2863f8e669d12c2ffec3a4ae716de76e0caf8/dagre-d3/dagre-d3.d.ts"
-  }
-}
