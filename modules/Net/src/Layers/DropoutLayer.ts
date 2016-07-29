@@ -42,11 +42,10 @@ namespace Net {
             V2.w[i] = 0;
             this.dropped[i] = 1;
           }
-        }
-      } else {
-        // scale the activations during prediction
-        for (var i = 0; i < N; i++) {
-          V2.w[i] *= this.drop_prob;
+          else {
+            // scale the activations during training
+            V2.w[i] *= this.drop_prob;
+          }
         }
       }
       this.out_act = V2;
