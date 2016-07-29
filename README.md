@@ -37,7 +37,7 @@ To run the samples, please execute `npm start` from the root directory. Make sur
 
 ### Analyze Deep Learning structures
 
-The sample `examples/models.html` loads famous Deep Learning Models such as AlexNet, VGG, GoogLeNet, etc. directly in your browser and visualizes the layer graph. It also analyzes their structure and prints detailed information such as the network dimension, number of parameters and network size in memory to the console.
+[The sample `examples/models.html`](https://chaosmail.github.io/caffejs/models.html) loads famous Deep Learning Models such as AlexNet, VGG, GoogLeNet, etc. directly in your browser and visualizes the layer graph. It also analyzes their structure and prints detailed information such as the network dimension, number of parameters and network size in memory to the console.
 
 Here is a break-down of **AlexNet** computed with CaffeJS.
 
@@ -228,11 +228,11 @@ Please note that these samples don't load the networks' weights but only the str
 
 ### Classification using GoogLeNet
 
-This is a demo that uses the pretrained GoogLeNet from Caffe to perform classification entirely in your browser using images from your webcam.
+[The demo `examples/webcam.html`](https://chaosmail.github.io/caffejs/webcam.html) uses the pretrained GoogLeNet model from Caffe (trained on ImageNet) to perform classification entirely in your browser using images from your webcam.
 
 ### DeepDream
 
-This is a cool demo that runs the famous [DeepDream](https://github.com/google/deepdream/blob/master/dream.ipynb) demo entirely in your browser. It uses the pretrained GoogLeNet from Caffe and runs the computation as webworker.
+[The `examples/deepdream.html`](https://chaosmail.github.io/caffejs/deepdream.html) is a cool example that runs the famous [DeepDream](https://github.com/google/deepdream/blob/master/dream.ipynb) demo entirely in your browser - entirely in JavaScript of course. It uses the pretrained GoogLeNet from Caffe and runs the computation as webworker.
 
 > Debugging this demo: Go to the `Sources` panel in the Chrome Developer Tools and load the demo. You should see a webworker icon entitled with `deepdream_worker.js`. You can click on it and set your breakpoints as usual. Additionally, you could enable `DevTools for Services Workers` in the `Resources` panel.
 
@@ -263,6 +263,7 @@ You can find the source code in the `modules/` directory where I organize in 5 m
 ### What's left to do
 
 * Debug and fix remaining issues with SoftMax layer
+* Debug and fix AlexNet
 * Implement AVE pooling backward pass
 * Implement more layers and missing parameters: some models need special layers, like elementwise sum, or convolution groups etc.
 * Extract weights directly from *.caffemodel file (instead of converting to intermediate binary format)
@@ -271,6 +272,7 @@ You can find the source code in the `modules/` directory where I organize in 5 m
 * Rename FilterDrawer to ActivationDrawer, implement FilterDrawer to visualize filters
 * Auto-scale the filters and activations to a meaningful output dimension
 * Publish weights on Dropbox, and make them download script using curl
+* Add a nice layout, docs and example page
 
 ## License
 
