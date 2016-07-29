@@ -160,8 +160,9 @@ namespace Net {
         this.in_depth = pred[0].out_depth;
       }
       
-      this.out_sx = Math.round((this.in_sx + this.pad * 2 - this.sx) / this.stride + 1);
-      this.out_sy = Math.round((this.in_sy + this.pad * 2 - this.sy) / this.stride + 1);
+      var s = this.getOutputShape();
+      this.out_sx = s[1];
+      this.out_sy = s[2];
     }
 
     getNumParameters() {
@@ -171,8 +172,8 @@ namespace Net {
     getOutputShape() {
       return [
         this.out_depth,
-        Math.ceil((this.in_sy + 2 * this.pad - this.sy + 1 + this.stride - 1) / this.stride),
-        Math.ceil((this.in_sx + 2 * this.pad - this.sx + 1 + this.stride - 1) / this.stride),
+        Math.round((this.in_sx + this.pad * 2 - this.sx) / this.stride + 1),
+        Math.round((this.in_sy + this.pad * 2 - this.sy) / this.stride + 1),
       ]
     }
 

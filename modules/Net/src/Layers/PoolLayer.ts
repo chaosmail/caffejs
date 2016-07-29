@@ -62,8 +62,12 @@ namespace Net {
               let v = 0.0;
               let xstart = ax * this.stride - this.pad;
               let ystart = ay * this.stride - this.pad;
-              let xend = Math.min(xstart + this.sx, this.out_sx + this.pad);
-              let yend = Math.min(ystart + this.sy, this.out_sy + this.pad);
+              let xend = Math.min(xstart + this.sx, V.sx + this.pad);
+              let yend = Math.min(ystart + this.sy, V.sy + this.pad);
+              xstart = Math.max(xstart, 0);
+              ystart = Math.max(ystart, 0);
+              xend = Math.min(xend, V.sx);
+              yend = Math.min(yend, V.sy);
               let pool_size = (xend - xstart) * (yend - ystart);
               // perform average pooling
               for (let x = xstart; x < xend; ++x) {
@@ -146,16 +150,20 @@ namespace Net {
         this.in_depth = pred[0].out_depth;
       }
 
-      this.out_sx = Math.round((this.in_sx + this.pad * 2 - this.sx) / this.stride + 1);
-      this.out_sy = Math.round((this.in_sy + this.pad * 2 - this.sy) / this.stride + 1);
+      var s = this.getOutputShape();
+      this.out_sx = s[1];
+      this.out_sy = s[2];
       this.out_depth = this.in_depth;
     }
 
     getOutputShape() {
       return [
         this.out_depth,
-        Math.ceil((this.in_sy + 2 * this.pad - this.sy + 1 + this.stride - 1) / this.stride),
-        Math.ceil((this.in_sx + 2 * this.pad - this.sx + 1 + this.stride - 1) / this.stride),
+        // using ceil do to Caffe compatibility
+        // https://github.com/BVLC/caffe/issues/1318
+        // https://github.com/BVLC/caffe/issues/4252
+        Math.ceil((this.in_sx + this.pad * 2 - this.sx) / this.stride + 1),
+        Math.ceil((this.in_sy + this.pad * 2 - this.sy) / this.stride + 1),
       ]
     }
 

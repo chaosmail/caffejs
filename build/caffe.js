@@ -1024,8 +1024,9 @@ var Net;
                 this.in_sy = pred[0].out_sy;
                 this.in_depth = pred[0].out_depth;
             }
-            this.out_sx = Math.round((this.in_sx + this.pad * 2 - this.sx) / this.stride + 1);
-            this.out_sy = Math.round((this.in_sy + this.pad * 2 - this.sy) / this.stride + 1);
+            var s = this.getOutputShape();
+            this.out_sx = s[1];
+            this.out_sy = s[2];
         };
         ConvLayer.prototype.getNumParameters = function () {
             return [this.in_depth * this.sx * this.sy * this.out_depth, this.out_depth];
@@ -1033,8 +1034,8 @@ var Net;
         ConvLayer.prototype.getOutputShape = function () {
             return [
                 this.out_depth,
-                Math.ceil((this.in_sy + 2 * this.pad - this.sy + 1 + this.stride - 1) / this.stride),
-                Math.ceil((this.in_sx + 2 * this.pad - this.sx + 1 + this.stride - 1) / this.stride),
+                Math.round((this.in_sx + this.pad * 2 - this.sx) / this.stride + 1),
+                Math.round((this.in_sy + this.pad * 2 - this.sy) / this.stride + 1),
             ];
         };
         ConvLayer.prototype.getDescription = function () {
@@ -1114,8 +1115,12 @@ var Net;
                             var v_1 = 0.0;
                             var xstart = ax_1 * this.stride - this.pad;
                             var ystart = ay_1 * this.stride - this.pad;
-                            var xend = Math.min(xstart + this.sx, this.out_sx + this.pad);
-                            var yend = Math.min(ystart + this.sy, this.out_sy + this.pad);
+                            var xend = Math.min(xstart + this.sx, V.sx + this.pad);
+                            var yend = Math.min(ystart + this.sy, V.sy + this.pad);
+                            xstart = Math.max(xstart, 0);
+                            ystart = Math.max(ystart, 0);
+                            xend = Math.min(xend, V.sx);
+                            yend = Math.min(yend, V.sy);
                             var pool_size = (xend - xstart) * (yend - ystart);
                             // perform average pooling
                             for (var x_1 = xstart; x_1 < xend; ++x_1) {
@@ -1195,15 +1200,19 @@ var Net;
                 this.in_sy = pred[0].out_sy;
                 this.in_depth = pred[0].out_depth;
             }
-            this.out_sx = Math.round((this.in_sx + this.pad * 2 - this.sx) / this.stride + 1);
-            this.out_sy = Math.round((this.in_sy + this.pad * 2 - this.sy) / this.stride + 1);
+            var s = this.getOutputShape();
+            this.out_sx = s[1];
+            this.out_sy = s[2];
             this.out_depth = this.in_depth;
         };
         PoolLayer.prototype.getOutputShape = function () {
             return [
                 this.out_depth,
-                Math.ceil((this.in_sy + 2 * this.pad - this.sy + 1 + this.stride - 1) / this.stride),
-                Math.ceil((this.in_sx + 2 * this.pad - this.sx + 1 + this.stride - 1) / this.stride),
+                // using ceil do to Caffe compatibility
+                // https://github.com/BVLC/caffe/issues/1318
+                // https://github.com/BVLC/caffe/issues/4252
+                Math.ceil((this.in_sx + this.pad * 2 - this.sx) / this.stride + 1),
+                Math.ceil((this.in_sy + this.pad * 2 - this.sy) / this.stride + 1),
             ];
         };
         PoolLayer.prototype.getDescription = function () {
@@ -1962,10 +1971,7 @@ var Net;
         };
         LocalResponseNormalizationLayer.prototype.getDescription = function () {
             return _super.prototype.getDescription.call(this).concat([
-                'alpha ' + this.alpha,
-                'beta ' + this.beta,
-                'k ' + this.k,
-                'n ' + this.n,
+                'n ' + this.n + ', ' + 'k ' + this.k,
             ]);
         };
         LocalResponseNormalizationLayer.prototype.toJSON = function () {

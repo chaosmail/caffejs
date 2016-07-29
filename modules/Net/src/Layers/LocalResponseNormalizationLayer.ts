@@ -107,10 +107,7 @@ namespace Net {
 
     getDescription() {
       return super.getDescription().concat([
-        'alpha ' + this.alpha, 
-        'beta ' + this.beta,
-        'k ' + this.k,
-        'n ' + this.n,
+        'n ' + this.n + ', ' + 'k ' + this.k,
       ]);
     }
 
