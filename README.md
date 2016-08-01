@@ -14,9 +14,7 @@ To run the samples, please execute `npm start` from the root directory. Make sur
 
 Clone the repository to your local drive and then start a static webserver in the root directory (e.g. run `npm start`). Now you can open `models.html` that loads and visualizes popular deep learning architectures (such as AlexNet, VGG, GoogLeNet, etc.) to analyze their structure. This loads and parses the Caffe models from `.prototxt` files and convert them on-the-fly to ConvNetJS models.
 
-To run a forward pass we need to load some pretrained model weights. You can use the script `scripts/weights_to_bin.py` to convert `*.caffemodel` files to binary blobs. Unfortunately, you need to have `Caffe` and `pycaffe` installed (which is a pain) to generate those files. However, I will host most of the model weights directly in this repo.
-
-You can as well convert mean files using `python2 scripts/convert_protomean.py examples/data/models/VGG_CNN_S/VGG_mean.binaryproto examples/data/models/VGG_CNN_S/VGG_mean.txt` - however I will also provide the converted mean TXT files in the repo.
+To run a forward pass we need to load some pretrained model weights. You can use the script `scripts/convert_caffemodel.py` to convert `*.caffemodel` files to binary blobs. Unfortunately, you need to have `Caffe` and `pycaffe` installed (which is a pain) to generate those files (for now). However, I will host small model weights directly in this repo - or publish them via Dropbox.
 
 ### Loading the labels
 
@@ -51,7 +49,7 @@ p.parse('models/age_net/mean.binaryproto').then(function(data){
 });
 ```
 
-You can debug the mean values by rendering the volume to the screen. Add the following code to the callback function to convert the volume to a Canvas image.
+You can debug the mean values by rendering the Volume to the screen. Add the following line to the callback function to render the Volume to a Canvas.
 
 ```js
 ImgJS.Image.fromMean(mean).render();
