@@ -82,9 +82,9 @@ namespace ImgJS {
       for (let y=0; y < h; y++){
         for (let x=0; x < w; x++){
           let pp = (y*w + x) * 4;
-          let mean_0 = mean ? mean[c0] instanceof Array ? +mean[c0][y*h + x] : +mean[c0] : 0;
-          let mean_1 = mean ? mean[c1] instanceof Array ? +mean[c1][y*h + x] : +mean[c1] : 0;
-          let mean_2 = mean ? mean[c2] instanceof Array ? +mean[c2][y*h + x] : +mean[c2] : 0;
+          let mean_0 = mean ? mean instanceof Net.Vol ? mean.get(x,y,c0) : +mean[c0] : 0;
+          let mean_1 = mean ? mean instanceof Net.Vol ? mean.get(x,y,c1) : +mean[c1] : 0;
+          let mean_2 = mean ? mean instanceof Net.Vol ? mean.get(x,y,c2) : +mean[c2] : 0;
           let dval_0 = vol.get(x, y, c0);
           let dval_1 = vol.get(x, y, c1);
           let dval_2 = vol.get(x, y, c2);
@@ -119,9 +119,9 @@ namespace ImgJS {
       for (var y=0; y < h; y++){
         for (var x=0; x < w; x++){
           var pp = (y*w + x) * 4;
-          var mean_0 = mean[c0] instanceof Array ? +mean[c0][y*h + x] : +mean[c0];
-          var mean_1 = mean[c1] instanceof Array ? +mean[c1][y*h + x] : +mean[c1];
-          var mean_2 = mean[c2] instanceof Array ? +mean[c2][y*h + x] : +mean[c2];
+          var mean_0 = mean instanceof Net.Vol ? mean.get(x,y,c0) : +mean[c0];
+          var mean_1 = mean instanceof Net.Vol ? mean.get(x,y,c1) : +mean[c1];
+          var mean_2 = mean instanceof Net.Vol ? mean.get(x,y,c2) : +mean[c2];
           vol.set(x, y, c0, this.data[pp + 0] - mean_0);
           vol.set(x, y, c1, this.data[pp + 1] - mean_1);
           vol.set(x, y, c2, this.data[pp + 2] - mean_2);

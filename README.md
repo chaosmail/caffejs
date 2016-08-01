@@ -31,6 +31,32 @@ d3.text('data/ilsvrc12/synset_words.txt', function(data){
 });
 ```
 
+### Using the `mean.binaryproto` values
+
+To use the `mean.binaryproto` values in CaffeJS, we need to parse the binary files into Volumes. First, we need to include to Protobuf specific libraries in the header.
+
+```html
+<script src="libs/long.min.js"></script>
+<script src="libs/bytebuffer.min.js"></script>
+<script src="libs/protobuf.min.js"></script>
+```
+
+Now we can use the `BlobProtoParser` to transform the binary file into a Volume.
+
+```js
+var mean;
+var p = new Parser.BlobProtoParser();
+p.parse('models/age_net/mean.binaryproto').then(function(data){
+  mean = data;
+});
+```
+
+You can debug the mean values by rendering the volume to the screen. Add the following code to the callback function to convert the volume to a Canvas image.
+
+```js
+ImgJS.Image.fromMean(mean).render();
+```
+
 ## Examples
 
 To run the samples, please execute `npm start` from the root directory. Make sure you updated all dependencies by running `npm install` beforehand.
