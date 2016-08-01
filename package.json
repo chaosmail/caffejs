@@ -19,7 +19,8 @@
     "gulp-sourcemaps": "^1.6.0",
     "gulp-typescript": "^2.13.6",
     "gulp-uglify": "^1.5.4",
-    "http-server": "^0.9.0"
+    "http-server": "^0.9.0",
+    "protobufjs": "^5.0.1"
   },
   "scripts": {
     "start": "cd examples && http-server",

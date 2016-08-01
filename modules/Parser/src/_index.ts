@@ -1,4 +1,3 @@
-/// <reference path="Proto.ts" />
 /// <reference path="TextParser.ts" />
 /// <reference path="BinaryParser.ts" />
 /// <reference path="PrototxtParser.ts" />
