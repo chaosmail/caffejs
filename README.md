@@ -1,4 +1,4 @@
-# Caffe.js
+# CaffeJS
 
 This repo is a proof of concept for porting Caffe models to the browser using ConvNetJS (by Andrej Karpathy). It aims to help beginners to dive into Deep Neural Networks by using only a browser.
 
@@ -8,7 +8,7 @@ This work is pre-alpha and based on ConvNetJS (which is alpha), so you can imagi
 
 To run the samples, please execute `npm start` from the root directory. Make sure you updated all dependencies by running `npm install` beforehand.
 
-### Running Caffe.js
+### Running CaffeJS
 
 > Please note, that the ConvNetJS library in this repo is a [fork](https://github.com/chaosmail/convnetjs) of the original version.
 
@@ -266,7 +266,7 @@ You can find the source code in the `modules/` directory where I organize in 5 m
 * Debug and fix AlexNet
 * Implement AVE pooling backward pass
 * Implement more layers and missing parameters: some models need special layers, like elementwise sum, or convolution groups etc.
-* Extract weights directly from *.caffemodel file (instead of converting to intermediate binary format)
+* Extract weights directly from *.caffemodel file (without converting to intermediate binary format)
 * Nice documentation and more samples
 * Write tests
 * Rename FilterDrawer to ActivationDrawer, implement FilterDrawer to visualize filters

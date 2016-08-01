@@ -1,6 +1,6 @@
 namespace Parser {
 
-  export abstract class BaseParser {
+  export abstract class TextParser {
 
     constructor() {
       

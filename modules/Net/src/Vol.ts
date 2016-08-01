@@ -13,7 +13,7 @@ namespace Net {
       // we were given dimensions of the vol
       var n = this.sx * this.sy * this.depth;
       this.w = nj.zeros(n);
-      this.dw = nj.zeros(n);
+      // this.dw = nj.zeros(n);
       if (fill === undefined) {
         // weight normalization is done to equalize the output
         // variance of every neuron, otherwise neurons with a lot

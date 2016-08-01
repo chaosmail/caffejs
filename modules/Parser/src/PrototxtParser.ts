@@ -1,8 +1,8 @@
-/// <reference path="BaseParser.ts" />
+/// <reference path="TextParser.ts" />
 
 namespace Parser {
 
-  export class PrototxtParser extends BaseParser {
+  export class PrototxtParser extends TextParser {
 
     parseString(raw: string){
       return this.parsePrototxt(raw);

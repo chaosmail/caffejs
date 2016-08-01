@@ -54,6 +54,10 @@ namespace ImgJS {
       ctx.putImageData(img, 0, 0);
     }
 
+    static fromMean(vol: Net.Vol, depth = 0, scale = 1, normalize = false) {
+      return Image.fromVol(vol, 0, [0,1,2], scale, normalize);
+    }
+
     static fromFilter(vol: Net.Vol, depth = 0, scale = 1, normalize = true) {
       return Image.fromVol(vol, 0, depth, scale, normalize);
     }
