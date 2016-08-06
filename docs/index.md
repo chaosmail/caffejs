@@ -1,3 +1,3 @@
-# CaffeJS - Deep Learning in the Browser
+# Deep Learning in the Browser
 
 lorem ipsum

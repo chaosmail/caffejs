@@ -6,3 +6,19 @@
 .mdl-card__media {
   background-color: #fff;
 }
+
+.drawer-separator {
+    height: 1px;
+    background-color: #dcdcdc;
+    margin: 8px 0;
+}
+
+span.mdl-navigation__link {
+  color: rgb(0,150,136) !important;
+  font-weight: bold;
+}
+
+.mdl-layout__drawer .mdl-navigation .mdl-navigation__link.is-active {
+  color: rgb(255,64,129) !important;
+  background-color: #e0e0e0;
+}

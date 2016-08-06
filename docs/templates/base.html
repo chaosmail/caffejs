@@ -38,9 +38,13 @@
       <div class="mdl-layout__drawer">
         <span class="mdl-layout-title">CaffeJS</span>
         <nav class="mdl-navigation">
-          <a class="mdl-navigation__link" href="models.html">Models</a>
-          <a class="mdl-navigation__link" href="webcam.html">Webcam</a>
-          <a class="mdl-navigation__link" href="deepdream.html">DeepDream</a>
+          <span class="mdl-navigation__link" href="">Documentation</span>
+          <a class="mdl-navigation__link {% if navindex %}is-active{% endif %}" href="index.html">Getting Started</a>
+          <div class="drawer-separator"></div>
+          <span class="mdl-navigation__link" href="">Examples</span>
+          <a class="mdl-navigation__link {% if navmodels %}is-active{% endif %}" href="models.html">Models</a>
+          <a class="mdl-navigation__link {% if navwebcam %}is-active{% endif %}" href="webcam.html">Webcam</a>
+          <a class="mdl-navigation__link {% if navdream %}is-active{% endif %}" href="deepdream.html">DeepDream</a>
         </nav>
       </div>
       <main class="mdl-layout__content">
