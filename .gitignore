@@ -1,5 +1,5 @@
 node_modules/
 typings/
 weights/
+docs-pages/
 *.caffemodel
-*.binaryproto

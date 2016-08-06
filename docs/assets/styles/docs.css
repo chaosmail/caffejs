@@ -1,0 +1,8 @@
+.grid-container {
+  max-width: 900px;
+  margin: auto;
+}
+
+.mdl-card__media {
+  background-color: #fff;
+}

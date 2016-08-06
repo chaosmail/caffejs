@@ -190,9 +190,30 @@ namespace Net {
                 .then((arrayBuffer) => {
                   var f = new Float32Array(arrayBuffer);
                   var n = layer.sx * layer.sy * layer.in_depth;
-                  for(var i=0; i<layer.out_depth; i++) {
-                    layer.filters[i].w.set(f.slice(i*n, i*n+n));
-                  }
+                  // if (layer.layer_type != 'fc'){
+                    for(var i=0; i<layer.out_depth; i++) {
+                      layer.filters[i].w.set(f.slice(i*n, i*n+n));
+                    }
+                  // }
+                  // // Hack: this should be done in convert_caffemodel
+                  // // but it is tricky there
+                  // else {
+                  //   var sx = layer.in_sx;
+                  //   var sy = layer.in_sy;
+                  //   var depth = layer.in_depth;
+                  //   for(let i=0; i<layer.out_depth; i++) {
+                  //     let fi = layer.filters[i];
+                  //     let A = f.slice(i*n, i*n+n);
+                  //     for (let x=0; x<sx; x++) {
+                  //       for (let y=0; y<sy; y++) {
+                  //         for (let d=0; d<depth; d++) {
+                  //           let ix = ((sx * y) + x) * depth + d;
+                  //           fi.set(x, y, d, A[ix]);
+                  //         }
+                  //       }
+                  //     }
+                  // }
+                  // }
                 }),
               fetch(this.weightPath + layer.name + '_bias.bin')
                 .then((response) => response.arrayBuffer())

@@ -1,7 +1,21 @@
 {
-  "buildDir": "build",
-  "examplesBuildDir": "examples/libs",
+  "buildDir": "dist/",
   "paths": {
     "scripts": "modules/**/*.ts"
+  },
+  "docs": {
+    "srcFiles": [
+      "docs/index.md"
+    ],
+    "exampleFiles": [
+      "docs/templates/models.html",
+      "docs/templates/webcam.html",
+      "docs/templates/deepdream.html"
+    ],
+    "tplDir": "docs/templates/",
+    "assetDir": "docs/assets/",
+    "baseTpl": "templates/base.html",
+    "exampleTpl": "templates/example.html",
+    "buildDir": "docs-pages/"
   }
 }

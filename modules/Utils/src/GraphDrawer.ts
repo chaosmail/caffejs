@@ -4,30 +4,58 @@ namespace Utils {
   
   export class GraphDrawer extends Net.Net {
 
+    graph: any;
+    $elem: d3.Selection<any>;
+    $svg: d3.Selection<any>;
+    $g: d3.Selection<any>;
+
+    width: number;
+    height:number;
+
     constructor() {
       super();
     }
 
-    render(element, width = 600) {
+    render(element, width?, height?) {
       // Create the renderer
       var render = new dagreD3.render();
-      var graph = this.createGraph();
+      this.graph = this.createGraph();
 
       // Clean
-      var $elem = d3.select(element);
-      $elem.selectAll('*').remove();
+      this.$elem = d3.select(element);
+      this.$elem.selectAll('*').remove();
 
       // Run the renderer. This is what draws the final graph.
-      var $svg = $elem.append('svg')
-        .attr('width', width); 
+      this.$svg = this.$elem.append('svg'); 
 
-      var $g = $svg.append("g");
-      render($g, graph);
+      this.$g = this.$svg.append("g");
+      render(this.$g, this.graph);
+
+      this.width = width || this.graph.graph().width;
+      this.height = height || this.graph.graph().height;
 
       // Center the graph
-      var xCenterOffset = (width - graph.graph().width) / 2;
-      $g.attr("transform", "translate(" + xCenterOffset + ", 20)");
-      $svg.attr("height", graph.graph().height + 40);
+      var xOffset = (this.width - this.graph.graph().width) / 2;
+      this.$g.attr("transform", "translate(" + xOffset + ")");
+
+      this.$svg.attr('width', this.width);
+      this.$svg.attr('height', this.height);
+
+      return this;
+    }
+
+    fit() {
+      // this.$g.attr("transform", "translate(" + 0 + ")");
+      this.$svg.attr("viewBox", "0 0 " + this.graph.graph().width + " " + this.graph.graph().height)
+      // this.$svg.attr("preserveAspectRatio", "xMinYMax meet");
+      return this;
+    }
+
+    rotate() {
+      var xOffset = (this.width - this.graph.graph().width) / 2;
+      this.$g.attr("transform", "rotate(270) translate(" + xOffset + ")");
+      this.$svg.attr("viewBox", "0 0 " + this.graph.graph().height + " " + this.graph.graph().width);
+      return this;
     }
 
     createGraph() {

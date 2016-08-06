@@ -1,0 +1,48 @@
+g.layer-conv > rect, g.layer-fc > rect {
+  fill: #4285f4;
+}
+
+g.layer-pool > rect {
+  fill: #db4437;
+}
+
+g.layer-lrn > rect {
+  fill: #0f9d58;
+}
+
+g.layer-concat > rect {
+  fill: #129d5a;
+}
+
+g.layer-softmax > rect {
+  fill: #f4b400;
+}
+
+text {
+  font-size: 14px;
+}
+
+.label {
+  color: #000;
+}
+
+.node rect {
+  stroke: #000;
+  fill: #fff;
+  stroke-width: 1.5px;
+}
+
+.edgePath path {
+  stroke: #333;
+  stroke-width: 1.5px;
+}
+
+.label text {
+  font-size: 12px;
+  fill: #666;
+}
+
+svg div {
+  text-align: center;
+  font-size: 14px;
+}

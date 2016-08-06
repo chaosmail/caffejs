@@ -1,0 +1,40 @@
+==============================================================
+Deep Face Recognition
+
+Omkar M. Parkhi, Andrea Vedaldi, Andrew Zisserman
+Visual Geometry Group, University of Oxford
+==============================================================
+
+--------
+Overview
+--------
+
+This package contains the Caffe[3] models for computation of "VGG Face" descriptor.
+The algorithm details can be found in [1]. The model was trained using MatConvNet[2] Library.
+
+The source code and data packages can be downloaded from: 
+http://www.robots.ox.ac.uk/~vgg/software/vgg_face/
+
+The models and other contents of this package can only be used for non-commercial research purposes. 
+(Please read the licence terms here. http://creativecommons.org/licenses/by-nc/4.0/) 
+
+Please cite [1] if you use the code or the data. If you have any questions regarding the package, 
+please contact Omkar M. Parkhi <omkar@robots.ox.ac.uk>
+
+
+----------
+References
+----------
+
+[1] O. M. Parkhi, A. Vedaldi, A. Zisserman
+Deep Face Recognition
+British Machine Vision Conference, 2015.
+
+[2] A. Vedaldi, K. Lenc
+MatConvNet - Convolutional Neural Networks for MATLAB
+arXiv:1412.4564, 2014.
+
+[3] Y. Jia, E. Shelhamer, J. Donahue, S. Karayev, J. Long, R. Girshick, S. Guadarrama, T. Darrell 
+Caffe: Convolutional Architecture for Fast Feature Embedding
+arXiv:1408.5093, 2014
+

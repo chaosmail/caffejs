@@ -55,6 +55,15 @@ namespace Net {
       }
     }
 
+    resetGradient() {
+      super.resetGradient();
+
+      for (let i = 0; i < this.out_depth; ++i) {
+        this.filters[i].dw = nj.zeros((<Vol>this.filters[i]).w.length);
+      } 
+      this.biases.dw = nj.zeros(this.out_depth);
+    }
+
     forward(V, is_training) {
       // optimized code by @mdda that achieves 2x speedup over previous version
 

@@ -14,16 +14,21 @@
     "dagre-d3": "^0.4.17",
     "gulp": "^3.9.1",
     "gulp-clean": "^0.3.2",
+    "gulp-footer": "^1.0.5",
+    "gulp-header": "^1.8.7",
+    "gulp-markdown": "^1.2.0",
+    "gulp-nunjucks": "^2.2.0",
     "gulp-plumber": "^1.1.0",
     "gulp-rename": "^1.2.2",
     "gulp-sourcemaps": "^1.6.0",
     "gulp-typescript": "^2.13.6",
     "gulp-uglify": "^1.5.4",
     "http-server": "^0.9.0",
+    "nunjucks": "^2.4.2",
     "protobufjs": "^5.0.1"
   },
   "scripts": {
-    "start": "cd examples && http-server",
+    "start": "cd docs-pages && http-server",
     "build": "gulp",
     "postinstall": "typings install",
     "test": "echo \"Error: no test specified\" && exit 1"

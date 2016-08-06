@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}ImageNet Classification{% endblock %}
+
+{% block header %}
+<!-- For accessing the webcam -->
+<script src="libs/webcam.min.js"></script>
+
+<script src="libs/d3.min.js"></script>
+<script src="dist/caffe.js"></script>
+
+<!-- For drawing the graph -->
+<script src="libs/lodash.min.js"></script>
+<script src="libs/graphlib.core.min.js"></script>
+<script src="libs/dagre.core.min.js"></script>
+<script src="libs/dagre-d3.core.min.js"></script>
+<link rel="stylesheet" href="styles/graph.css">
+
+<style>
+  .net-layer {
+    position: relative;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+  }
+
+  .model-container {
+    text-align: center;
+    padding: 16px;
+  }
+
+  .mdl-progress, .progressbar, .bufferbar {
+    height: 16px;
+  }
+
+  .results .label {
+    font-weight: bold;
+    padding: 8px;
+    margin-top: 12px;
+  }
+
+  .visualization-canvas canvas {
+    margin-right: 8px;
+  }
+
+  .camera, video, .model-layout svg, canvas.image {
+    width: 100% !important;
+    height: auto !important;
+  }
+</style>
+
+{% endblock %}
+
+{% block content %}
+<div class="mdl-grid grid-container">
+
+  <div class="mdl-cell mdl-cell--12-col mdl-grid">
+    
+    <!-- Webcam Input -->
+    <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--5-col">
+      <div class="mdl-card__media">
+        <div class="camera" style="width: 224px; height: 224px;"></div>
+      </div>
+      <div class="mdl-card__title">
+        <h2 class="mdl-card__title-text">Webcam</h2>
+      </div>
+      <div class="mdl-card__supporting-text">
+        Feed a picture from your webcam into the deep neural network running entirely in your browser.
+      </div>
+      <div class="mdl-card__actions mdl-card--border">
+        <button onclick="classifyFromWebcam()" disabled class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--raised mdl-button--accent webcam-trigger" data-upgraded=",MaterialButton,MaterialRipple">
+        Classify<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>
+      </div>
+    </div>
+  
+    <!-- Model Overview -->
+    <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--7-col">
+      <div class="mdl-card__media">
+        <div class="model-container">
+          <div class="model-layout"></div>
+          <div class="mdl-spinner mdl-js-spinner is-active model-loading"></div>
+        </div>
+      </div>
+      <div class="mdl-card__title">
+        <h2 class="mdl-card__title-text">GoogLeNet</h2>
+      </div>
+      <div class="mdl-card__supporting-text">
+        Using <a href="https://github.com/BVLC/caffe/tree/master/models/bvlc_googlenet" target="_new">bvlc_googlenet</a> (28 MB) trained on ImageNet.
+        <br><em>Szegedy et al., Going Deeper with Convolutions, CoRR, 2014</em>
+      </div>
+      <div class="mdl-card__actions mdl-card--border">
+        <a href="https://arxiv.org/pdf/1409.4842v1.pdf" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-upgraded=",MaterialButton,MaterialRipple">
+        Paper<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></a>
+        <a href="models.html?model=googlenet" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-upgraded=",MaterialButton,MaterialRipple">
+        Model Structure<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></a>
+      </div>
+    </div>
+
+  </div>
+  
+  <div class="mdl-cell mdl-cell--12-col mdl-grid results" style="display: none;">
+    
+    <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--5-col">
+      <div class="mdl-card__media">
+        <canvas class="image"></canvas>
+      </div>
+    </div>
+
+    <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--7-col">
+      <div class="label" id="label-0"></div>
+      <div id="class-0" class="mdl-progress mdl-js-progress"></div>
+      <div class="label" id="label-1"></div>
+      <div id="class-1" class="mdl-progress mdl-js-progress"></div>
+      <div class="label" id="label-2"></div>
+      <div id="class-2" class="mdl-progress mdl-js-progress"></div>
+      <div class="label" id="label-3"></div>
+      <div id="class-3" class="mdl-progress mdl-js-progress"></div>
+      <div class="label" id="label-4"></div>
+      <div id="class-4" class="mdl-progress mdl-js-progress"></div>
+    </div>
+
+  </div>
+
+  <div class="mdl-cell mdl-cell--12-col mdl-grid visualization" style="display: none;">
+    
+    <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--12-col visualization-canvas">
+      
+    </div>
+  
+  </div>
+</div>
+
+<div class="model"></div>
+
+<script language="JavaScript">
+  var nj = NumJS;
+  var image = new ImgJS.Image();
+
+  // Image dimensions
+  var width = 224;
+  var height = 224;
+  
+  // Compare top-n labels
+  var n = 5;
+  var format = d3.format('.2%');
+
+  // Let's hook up the webcam
+  Webcam.set({
+    width: width,
+    height: height
+  });
+  Webcam.attach('.camera');
+
+  var labels;
+  d3.text('data/ilsvrc12/synset_words.txt', function(data){
+    labels = data.split('\n').map(function(d){
+      return d.substr(10);
+    });
+  });
+
+  // the mean value can be found in train_val.prototxt
+  var mean = [104.0, 116.0, 122.0];
+  
+  loadModel();
+
+  function classifyFromWebcam() {
+    Webcam.snap(function(data_uri, canvas, ctx) {
+      var data = ctx.getImageData(0, 0, width, height);
+      var input = image.set(data, width, height).toVol(mean, [2,1,0]);
+      image.render(document.getElementsByClassName("image")[0])
+      classify(input);
+    });
+  }
+
+  function setResult(i, score, label){
+    var p = document.getElementById('class-' + i);
+    p.MaterialProgress.setProgress(score);
+
+    var l = document.getElementById('label-' + i);
+    l.textContent = label;
+  }
+
+  function classify(input) {
+    var scores = model.forward(input);
+    var topInd = nj.argmaxn(scores.w, n);
+    var topVal = nj.maxn(scores.w, n);
+
+    d3.selectAll('.results').style('display', 'flex');
+    for (var i=0;i<n;i++) {
+      setResult(i, topVal[i] * 100, labels[topInd[i]]);
+    }
+
+    visualize();
+  }
+
+  function visualize() {
+    d3.selectAll('.visualization').style('display', 'flex');
+    Utils.ActivationDrawer.fromNet(model).render('.visualization-canvas', false, 12, 36, 36);
+  }
+
+  function loadModel() {
+
+    model = new Net.CaffeModel(
+      'models/bvlc_googlenet/deploy.prototxt',
+      'models/bvlc_googlenet/weights/'
+    );
+
+    model.load().then(function(){
+      d3.selectAll('.model-loading').style('display', 'none');
+
+      d3.selectAll('.webcam-trigger').attr('disabled', null);
+      d3.selectAll('.model-layout').style('display', 'block');
+      d3.selectAll('.model-name').style('display', 'block');
+      d3.selectAll('.model-link').style('display', 'block');
+
+      var dag = Utils.GraphDrawer.fromNet(model);
+        dag.render('.model-layout', 2*width, height).fit().rotate();
+    });
+  }
+</script>
+{% endblock %}

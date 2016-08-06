@@ -14,7 +14,7 @@ To run the samples, please execute `npm start` from the root directory. Make sur
 
 Clone the repository to your local drive and then start a static webserver in the root directory (e.g. run `npm start`). Now you can open `models.html` that loads and visualizes popular deep learning architectures (such as AlexNet, VGG, GoogLeNet, etc.) to analyze their structure. This loads and parses the Caffe models from `.prototxt` files and convert them on-the-fly to ConvNetJS models.
 
-To run a forward pass we need to load some pretrained model weights. You can use the script `scripts/convert_caffemodel.py` to convert `*.caffemodel` files to binary blobs. Unfortunately, you need to have `Caffe` and `pycaffe` installed (which is a pain) to generate those files (for now). However, I will host small model weights directly in this repo - or publish them via Dropbox.
+To run a forward pass we need to load some pretrained model weights. First make sure you download the model weights for your particular model by running  `sh fetch_weights.sh` in the model directories. This will pull and unzip the binary model weights optimized for JavaScript form my Dropbox. These weights have been generated via the `scripts/convert_caffemodel.py`.
 
 ### Loading the labels
 
@@ -283,6 +283,10 @@ You can find the source code in the `modules/` directory where I organize in 5 m
 * NumJS - An abstraction for operations on Arrays and Volumes
 * Parser - A parser for converting Prototxt into JavaScript objects
 * Utils - Cool abstractions for visualizations, such as the GraphDrawer and FilterDrawer
+
+### Converting `*.caffemodel`
+
+You can use the script `scripts/convert_caffemodel.py` to convert `*.caffemodel` files to binary blobs which CaffeJS can load via http and parse. Unfortunately, you need to have `Caffe` and `pycaffe` installed to generate those files. You can as well download the prepared weights via running  `sh fetch_weights.sh` in the model directories.
 
 ### What's left to do
 

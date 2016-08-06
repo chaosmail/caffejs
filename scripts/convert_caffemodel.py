@@ -11,17 +11,20 @@ sys.path.insert(0, caffe_root + 'python')
 
 import caffe
 
-model = "age_net"
+dir_  = "VGG_FACE"
+proto = "VGG_FACE_deploy.prototxt"
+model = "VGG_FACE.caffemodel"
 
 # Set the right path to your model definition file, pretrained model weights,
 # and the image you would like to classify.
-MODEL_FILE = '../examples/models/%s/deploy.prototxt' % model
-PRETRAINED = '../examples/models/%s/%s.caffemodel' % (model, model)
-WEIGHTS_DIR = '../examples/models/%s/weights/' % model
+MODEL_FILE = '../examples/models/%s/%s' % (dir_, proto)
+PRETRAINED = '../examples/models/%s/%s' % (dir_, model)
+WEIGHTS_DIR = '../examples/models/%s/weights/' % dir_
 
 # Can be either 0 for TRAIN or 1 for TEST
 phase = 1
 
+prev_shape = ()
 net = caffe.Net(MODEL_FILE, PRETRAINED, phase)
 
 def rot90(W):
@@ -49,6 +52,13 @@ for key in net.params:
     # ConvnetJS uses the shape f, (y, x, d)
     weights_p = np.swapaxes(np.swapaxes(weights_p, 3, 1), 2, 1)
 
+  # else:
+    # sx = int(np.sqrt(stack_size / prev_shape[0])) or 1
+    # sy = sx or 1
+    # depth = prev_shape[0]
+    # print(depth, sy, sx)   
+    # weights_p = weights_p.reshape((nb_filter, depth, sy, sx))
+
   print("Converted to Shape: ", weights_p.shape)
 
   weights = {
@@ -57,6 +67,7 @@ for key in net.params:
   }
 
   filename = WEIGHTS_DIR + key + '.bin'
+  prev_shape = (nb_filter, stack_size, nb_col, nb_row)
 
   if not fs.exists(fs.dirname(filename)):
     fs.mkdir(fs.dirname(filename))
