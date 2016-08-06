@@ -11,15 +11,15 @@ sys.path.insert(0, caffe_root + 'python')
 
 import caffe
 
-dir_  = "VGG_FACE"
-proto = "VGG_FACE_deploy.prototxt"
-model = "VGG_FACE.caffemodel"
+dir_  = "bvlc_googlenet"
+proto = "deploy.prototxt"
+model = "bvlc_googlenet.caffemodel"
 
 # Set the right path to your model definition file, pretrained model weights,
 # and the image you would like to classify.
-MODEL_FILE = '../examples/models/%s/%s' % (dir_, proto)
-PRETRAINED = '../examples/models/%s/%s' % (dir_, model)
-WEIGHTS_DIR = '../examples/models/%s/weights/' % dir_
+MODEL_FILE = '../docs/assets/models/%s/%s' % (dir_, proto)
+PRETRAINED = '../docs/assets/models/%s/%s' % (dir_, model)
+WEIGHTS_DIR = '../docs/assets/models/%s/weights/' % dir_
 
 # Can be either 0 for TRAIN or 1 for TEST
 phase = 1

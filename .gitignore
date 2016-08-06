@@ -1,3 +1,4 @@
+.publish/
 node_modules/
 typings/
 weights/

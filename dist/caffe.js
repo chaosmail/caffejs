@@ -5222,6 +5222,7 @@ var Net;
 /// <reference path="BaseLayer.ts" />
 var Net;
 (function (Net) {
+    var nj = NumJS;
     var FullyConnectedLayer = (function (_super) {
         __extends(FullyConnectedLayer, _super);
         function FullyConnectedLayer(opt) {
@@ -5253,6 +5254,13 @@ var Net;
                 this.biases.w.set(opt.biases);
             }
         }
+        FullyConnectedLayer.prototype.resetGradient = function () {
+            _super.prototype.resetGradient.call(this);
+            for (var i = 0; i < this.out_depth; ++i) {
+                this.filters[i].dw = nj.zeros(this.filters[i].w.length);
+            }
+            this.biases.dw = nj.zeros(this.out_depth);
+        };
         FullyConnectedLayer.prototype.forward = function (V, is_training) {
             this.in_act = V;
             this.resetGradient();

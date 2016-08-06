@@ -9,6 +9,8 @@ const nunjucks = require('gulp-nunjucks');
 const markdown = require('gulp-markdown');
 const header = require('gulp-header');
 const footer = require('gulp-footer');
+var runSequence = require('run-sequence');
+const ghPages = require('gulp-gh-pages');
 
 // Gulp configuration
 const cfg = require('./gulpconfig.json');
@@ -28,7 +30,7 @@ gulp.task('clean/docs/build', () => {
     .pipe(clean());
 });
 
-gulp.task('scripts', ['clean/build'], () => {
+gulp.task('compile/scripts', ['clean/build'], () => {
 
   var tsResult = tsProject.src()
     .pipe(plumber())
@@ -43,6 +45,13 @@ gulp.task('scripts', ['clean/build'], () => {
       suffix: '.min'
     }))
     .pipe(gulp.dest(cfg.buildDir));
+});
+
+gulp.task('scripts', (callback) => {
+  runSequence(
+    'clean/build',
+    'compile/scripts',
+    callback);
 });
 
 gulp.task('copy/docs/assets', () => {
@@ -76,10 +85,21 @@ gulp.task('compile/examples', () => {
     .pipe(gulp.dest(cfg.docs.buildDir));
 });
 
-gulp.task('docs', ['scripts', 'copy/docs/dist', 'copy/docs/assets', 'compile/docs', 'compile/examples']);
+gulp.task('docs', (callback) => {
+  runSequence(
+    'clean/docs/build',
+    ['scripts', 'compile/docs', 'compile/examples'],
+    ['copy/docs/dist', 'copy/docs/assets'],
+    callback);
+});
 
 gulp.task('watch', ['scripts',], () => {
   gulp.watch(cfg.paths.scripts, ['scripts']);
+});
+
+gulp.task('deploy', ['docs'], () => {
+  return gulp.src(cfg.docs.buildDir + '**/*')
+    .pipe(ghPages());
 });
 
 // The default task (called when you run `gulp` from cli)
