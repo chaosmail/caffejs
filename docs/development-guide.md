@@ -25,3 +25,7 @@ You can find the source code in the `modules/` directory where I organize in 5 m
 ### Converting `*.caffemodel` files
 
 You can use the script `scripts/convert_caffemodel.py` to convert `*.caffemodel` files to binary blobs which CaffeJS can load via http and parse. Unfortunately, you need to have `Caffe` and `pycaffe` installed to generate those files. You can as well download the prepared weights via running  `sh fetch_weights.sh` in the model directories.
+
+## Deploy the docs
+
+Run `gulp deploy` to build the `docs-pages` folder and deploy it to Github.
