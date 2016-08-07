@@ -27,19 +27,16 @@
           <span class="mdl-layout-title">CaffeJS</span>
           <!-- Add spacer, to align navigation to the right -->
           <div class="mdl-layout-spacer"></div>
-          <!-- Navigation. We hide it in small screens. -->
-          <nav class="mdl-navigation mdl-layout--large-screen-only">
-            <a target="_new" href="https://github.com/chaosmail/caffejs" class="mdl-navigation__link github">
-              <span>GitHub</span>
-            </a>
-          </nav>
         </div>
+        <a target="_new" href="https://github.com/chaosmail/caffejs"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
       </header>
       <div class="mdl-layout__drawer">
         <span class="mdl-layout-title">CaffeJS</span>
         <nav class="mdl-navigation">
           <span class="mdl-navigation__link" href="">Documentation</span>
           <a class="mdl-navigation__link {% if navindex %}is-active{% endif %}" href="index.html">Getting Started</a>
+          <a class="mdl-navigation__link {% if navuser %}is-active{% endif %}" href="user-guide.html">User Guide</a>
+          <a class="mdl-navigation__link {% if navdev %}is-active{% endif %}" href="development-guide.html">Development Guide</a>
           <div class="drawer-separator"></div>
           <span class="mdl-navigation__link" href="">Examples</span>
           <a class="mdl-navigation__link {% if navmodels %}is-active{% endif %}" href="models.html">Models</a>
@@ -50,40 +47,7 @@
       <main class="mdl-layout__content">
         <div class="page-content">
           {% block content %}
-          <!-- Wide card with share menu button -->
-          <style>
-          .demo-card-wide.mdl-card {
-            width: 512px;
-          }
-          .demo-card-wide > .mdl-card__title {
-            color: #fff;
-            height: 176px;
-            background: url('../assets/demos/welcome_card.jpg') center / cover;
-          }
-          .demo-card-wide > .mdl-card__menu {
-            color: #fff;
-          }
-          </style>
-
-          <div class="demo-card-wide mdl-card mdl-shadow--2dp">
-            <div class="mdl-card__title">
-              
-            </div>
-            <div class="mdl-card__supporting-text">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-              Mauris sagittis pellentesque lacus eleifend lacinia...
-            </div>
-            <div class="mdl-card__actions mdl-card--border">
-              <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect">
-                Get Started
-              </a>
-            </div>
-            <div class="mdl-card__menu">
-              <button class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
-                <i class="material-icons">share</i>
-              </button>
-            </div>
-          </div>
+          
         {% endblock %}
         </div>
       </main>

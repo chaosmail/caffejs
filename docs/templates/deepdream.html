@@ -25,12 +25,13 @@
       <h2 class="mdl-card__title-text">DeepDream in the Browser</h2>
     </div>
     <div class="mdl-card__supporting-text">
-      This page runs the famous DeepDream demo entirely in the browser using the pretrained GoogLeNet model from Caffe and CaffeJS (which is based on <a target="_new" href="http://convnetjs.com">ConvNetJS</a>). It's a JavaScript port from the <a target="_new" href="https://github.com/google/deepdream/blob/master/dream.ipynb">original DeepDream demo</a> and performs the computation using a CaffeJS model in a webworker task in your browser. This page including all models and resources is hosted as a static page on Github.
-      <em>Mordvintsev et al., Inceptionism: Going Deeper into Neural Networks, Google Research Blog, 2015</em>
+      <p>This page runs the famous DeepDream demo entirely in the browser using the pretrained GoogLeNet model from Caffe and CaffeJS (which is based on <a target="_new" href="http://convnetjs.com">ConvNetJS</a>). It's a JavaScript port from the <a target="_new" href="https://github.com/google/deepdream/blob/master/dream.ipynb">original DeepDream demo</a> and performs the computation using a CaffeJS model in a webworker task in your browser. This page including all models and resources is hosted as a static page on Github.</p>
+      <p>Debugging this demo: Go to the <em>Sources</em> panel in the Chrome Developer Tools and load the demo. You should see a webworker icon entitled with <em>deepdream_worker.js</em>. You can click on it and set your breakpoints as usual. Additionally, you could enable <em>DevTools for Services Workers</em> in the <em>Resources</em> panel.</p>
+      <p><em>Mordvintsev et al., Inceptionism: Going Deeper into Neural Networks, Google Research Blog, 2015</em></p>
     </div>
     <div class="mdl-card__actions mdl-card--border">
       <a href="https://research.googleblog.com/2015/06/inceptionism-going-deeper-into-neural.html" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-upgraded=",MaterialButton,MaterialRipple">
-        Blog<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></a>
+        Blogpost<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></a>
     </div>
   </div>
 
@@ -53,7 +54,6 @@
           <option>inception_4c/output</option>   
           <option>inception_4d/output</option>   
           <option>inception_4e/output</option>   
-          <option>inception_5a/output</option>   
           <option>inception_5a/output</option>   
           <option>inception_5b/output</option> 
       </select>

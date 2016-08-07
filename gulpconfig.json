@@ -5,7 +5,9 @@
   },
   "docs": {
     "srcFiles": [
-      "docs/index.md"
+      "docs/index.md",
+      "docs/user-guide.md",
+      "docs/development-guide.md"
     ],
     "exampleFiles": [
       "docs/templates/models.html",
