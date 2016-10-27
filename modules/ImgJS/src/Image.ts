@@ -4,6 +4,13 @@ namespace ImgJS {
 
   import nj = NumJS;
 
+  // TODO
+  // image.size = image.width, image.height
+  // 
+  // Implement the Vol functions
+  // image.resize()
+  // image.roll()
+
   export class Image {
 
     data: Uint8ClampedArray;
@@ -36,7 +43,8 @@ namespace ImgJS {
           
           resolve(this.data);
         };
-        this.image.src = this.src;
+        this.image.src = this.src + '?' + new Date().getTime();
+        this.image.setAttribute('crossOrigin', '');
       });
     }
 

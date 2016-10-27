@@ -25,15 +25,17 @@
   <div class="mdl-card mdl-cell mdl-cell--12-col mdl-grid">
     <div class="controls">
       <select>
-        <option value="models/bvlc_alexnet/deploy.prototxt">AlexNet</option>
-        <option selected="selected" value="models/bvlc_googlenet/deploy.prototxt">GoogLeNet</option>
-        <option value="models/VGG_CNN_S/deploy.prototxt">VGG CNN S</option>
-        <option value="models/VGG_FACE/VGG_FACE_deploy.prototxt">VGG_FACE</option>
-        <option value="models/VGG_ILSVRC_19_layers/deploy.prototxt">VGG ILSVRC 19 layers</option>
-        <option value="models/nin_imagenet/deploy.prototxt">NiN</option>
+        <option value="alexnet">AlexNet</option>
+        <option selected="selected" value="googlenet">GoogLeNet</option>
+        <option value="vgg-cnn-s">VGG CNN S</option>
+        <option value="vgg-face">VGG_FACE</option>
+        <option value="vgg-19">VGG ILSVRC 19 layers</option>
+        <option value="nin">NiN</option>
+<!--
+        Needs some layers first!
         <option value="models/ResNet/ResNet-50-deploy.prototxt">ResNet-50</option>
         <option value="models/ResNet/ResNet-101-deploy.prototxt">ResNet-101</option>
-        <option value="models/ResNet/ResNet-152-deploy.prototxt">ResNet-152</option>  
+        <option value="models/ResNet/ResNet-152-deploy.prototxt">ResNet-152</option>   -->
       </select>
     </div>
   </div>
@@ -43,6 +45,15 @@
 </div>
 
 <script language="JavaScript">
+
+var urls = {
+  'alexnet': 'models/bvlc_alexnet/deploy.prototxt',
+  'googlenet': 'models/bvlc_googlenet/deploy.prototxt',
+  'vgg-cnn-s': 'models/VGG_CNN_S/deploy.prototxt',
+  'vgg-face': 'models/VGG_FACE/VGG_FACE_deploy.prototxt',
+  'vgg-19': 'models/VGG_ILSVRC_19_layers/deploy.prototxt',
+  'nin': 'models/nin_imagenet/deploy.prototxt',
+}
 
 function loadModel(url) {
 
@@ -61,12 +72,26 @@ function loadModel(url) {
 }
 
 d3.select('.controls > select').on('change', function(){
-  var url = d3.select('.controls > select').property("value");
+  var model = d3.select('.controls > select').property("value");
   console.clear();
-  loadModel(url);
+  loadModel(urls[model]);
 });
 
-loadModel('models/bvlc_googlenet/deploy.prototxt');
+var hash = window.location.hash.substr(1);
+
+if (hash) {
+  loadModel(urls[hash]);
+
+  d3.select('.controls > select [selected="selected"]')
+    .attr('selected', '');
+
+  d3.select('.controls > select [value="' + hash + '"]')
+    .attr('selected', 'selected');
+}
+else {
+  loadModel(urls['googlenet']);
+}
+
 
 </script>
 {% endblock %}

@@ -18,6 +18,8 @@ namespace Net {
     public l1_decay_mul: number;
     public l2_decay_mul: number;
 
+    public conv_groups:number = 1;
+
     public biases: Vol;
     public filters: Vol[];
 

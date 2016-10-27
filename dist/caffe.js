@@ -4882,6 +4882,8 @@ var Net;
             this.stride = Net.getopt(opt, ['stride'], 1);
             // amount of 0 padding to add around borders of input volume
             this.pad = Net.getopt(opt, ['pad'], 0);
+            // Convolution groups from AlexNet
+            this.conv_groups = Net.getopt(opt, ['group'], 1);
             this.l1_decay_mul = Net.getopt(opt, ['l1_decay_mul'], 0.0);
             this.l2_decay_mul = Net.getopt(opt, ['l2_decay_mul'], 1.0);
             this.updateDimensions(opt.pred);
@@ -4890,8 +4892,9 @@ var Net;
             this.biases = new Net.Vol(1, 1, this.out_depth, bias);
             // initialize filters
             this.filters = [];
+            var f_depth = Math.ceil(this.in_depth / this.conv_groups);
             for (var i = 0; i < this.out_depth; ++i) {
-                this.filters.push(new Net.Vol(this.sx, this.sy, this.in_depth, 0.0));
+                this.filters.push(new Net.Vol(this.sx, this.sy, f_depth, 0.0));
             }
         }
         ConvLayer.prototype.resetGradient = function () {
@@ -4909,29 +4912,34 @@ var Net;
             var V_sx = V.sx | 0;
             var V_sy = V.sy | 0;
             var xy_stride = this.stride | 0;
-            for (var d = 0; d < this.out_depth; ++d) {
-                var f = this.filters[d];
-                var x = -this.pad | 0;
-                var y = -this.pad | 0;
-                for (var ay = 0; ay < this.out_sy; y += xy_stride, ++ay) {
-                    x = -this.pad | 0;
-                    for (var ax = 0; ax < this.out_sx; x += xy_stride, ++ax) {
-                        // convolve centered at this particular location
-                        var a = 0.0;
-                        for (var fy = 0; fy < f.sy; ++fy) {
-                            var oy = y + fy; // coordinates in the original input array coordinates
-                            for (var fx = 0; fx < f.sx; ++fx) {
-                                var ox = x + fx;
-                                if (oy >= 0 && oy < V_sy && ox >= 0 && ox < V_sx) {
-                                    for (var fd = 0; fd < f.depth; ++fd) {
-                                        // avoid function call overhead (x2) for efficiency, compromise modularity :(
-                                        a += f.w[((f.sx * fy) + fx) * f.depth + fd] * V.w[((V_sx * oy) + ox) * V.depth + fd];
+            var f_depth = Math.ceil(this.out_depth / this.conv_groups);
+            for (var g = 0; g < this.conv_groups; ++g) {
+                var f_start = g * f_depth;
+                var f_end = f_start + f_depth;
+                for (var d = f_start; d < f_end; ++d) {
+                    var f = this.filters[d];
+                    var x = -this.pad | 0;
+                    var y = -this.pad | 0;
+                    for (var ay = 0; ay < this.out_sy; y += xy_stride, ++ay) {
+                        x = -this.pad | 0;
+                        for (var ax = 0; ax < this.out_sx; x += xy_stride, ++ax) {
+                            // convolve centered at this particular location
+                            var a = 0.0;
+                            for (var fy = 0; fy < f.sy; ++fy) {
+                                var oy = y + fy; // coordinates in the original input array coordinates
+                                for (var fx = 0; fx < f.sx; ++fx) {
+                                    var ox = x + fx;
+                                    if (oy >= 0 && oy < V_sy && ox >= 0 && ox < V_sx) {
+                                        for (var fd = 0; fd < f.depth; ++fd) {
+                                            // avoid function call overhead (x2) for efficiency, compromise modularity :(
+                                            a += f.w[((f.sx * fy) + fx) * f.depth + fd] * V.w[((V_sx * oy) + ox) * V.depth * (g + 1) + fd];
+                                        }
                                     }
                                 }
                             }
+                            a += this.biases.w[d];
+                            A.set(ax, ay, d, a);
                         }
-                        a += this.biases.w[d];
-                        A.set(ax, ay, d, a);
                     }
                 }
             }
@@ -4943,31 +4951,36 @@ var Net;
             var V_sx = V.sx | 0;
             var V_sy = V.sy | 0;
             var xy_stride = this.stride | 0;
-            for (var d = 0; d < this.out_depth; ++d) {
-                var f = this.filters[d];
-                var x = -this.pad | 0;
-                var y = -this.pad | 0;
-                for (var ay = 0; ay < this.out_sy; y += xy_stride, ++ay) {
-                    x = -this.pad | 0;
-                    for (var ax = 0; ax < this.out_sx; x += xy_stride, ++ax) {
-                        // convolve centered at this particular location
-                        var chain_grad = this.out_act.get_grad(ax, ay, d); // gradient from above, from chain rule
-                        for (var fy = 0; fy < f.sy; ++fy) {
-                            var oy = y + fy; // coordinates in the original input array coordinates
-                            for (var fx = 0; fx < f.sx; ++fx) {
-                                var ox = x + fx;
-                                if (oy >= 0 && oy < V_sy && ox >= 0 && ox < V_sx) {
-                                    for (var fd = 0; fd < f.depth; ++fd) {
-                                        // avoid function call overhead (x2) for efficiency, compromise modularity :(
-                                        var ix1 = ((V_sx * oy) + ox) * V.depth + fd;
-                                        var ix2 = ((f.sx * fy) + fx) * f.depth + fd;
-                                        f.dw[ix2] += V.w[ix1] * chain_grad;
-                                        V.dw[ix1] += f.w[ix2] * chain_grad;
+            var group_depth = Math.ceil(this.out_depth / this.conv_groups);
+            for (var g = 0; g < this.conv_groups; ++g) {
+                var f_start = g * group_depth;
+                var f_end = f_start + group_depth;
+                for (var d = f_start; d < f_end; ++d) {
+                    var f = this.filters[d];
+                    var x = -this.pad | 0;
+                    var y = -this.pad | 0;
+                    for (var ay = 0; ay < this.out_sy; y += xy_stride, ++ay) {
+                        x = -this.pad | 0;
+                        for (var ax = 0; ax < this.out_sx; x += xy_stride, ++ax) {
+                            // convolve centered at this particular location
+                            var chain_grad = this.out_act.get_grad(ax, ay, d); // gradient from above, from chain rule
+                            for (var fy = 0; fy < f.sy; ++fy) {
+                                var oy = y + fy; // coordinates in the original input array coordinates
+                                for (var fx = 0; fx < f.sx; ++fx) {
+                                    var ox = x + fx;
+                                    if (oy >= 0 && oy < V_sy && ox >= 0 && ox < V_sx) {
+                                        for (var fd = 0; fd < f.depth; ++fd) {
+                                            // avoid function call overhead (x2) for efficiency, compromise modularity :(
+                                            var ix1 = ((V_sx * oy) + ox) * V.depth * (g + 1) + fd;
+                                            var ix2 = ((f.sx * fy) + fx) * f.depth + fd;
+                                            f.dw[ix2] += V.w[ix1] * chain_grad;
+                                            V.dw[ix1] += f.w[ix2] * chain_grad;
+                                        }
                                     }
                                 }
                             }
+                            this.biases.dw[d] += chain_grad;
                         }
-                        this.biases.dw[d] += chain_grad;
                     }
                 }
             }
@@ -5001,7 +5014,10 @@ var Net;
             this.out_sy = s[2];
         };
         ConvLayer.prototype.getNumParameters = function () {
-            return [this.in_depth * this.sx * this.sy * this.out_depth, this.out_depth];
+            return [
+                Math.ceil(this.in_depth * this.sx * this.sy * this.out_depth / this.conv_groups),
+                this.out_depth
+            ];
         };
         ConvLayer.prototype.getOutputShape = function () {
             return [
@@ -5230,6 +5246,7 @@ var Net;
             this.layer_type = 'fc';
             this.sx = 1;
             this.sy = 1;
+            this.conv_groups = 1;
             // required
             // ok fine we will allow 'filters' as the word as well
             this.out_depth = opt.num_neurons !== undefined ? opt.num_neurons : opt.filters;
@@ -6043,6 +6060,7 @@ var Net;
                     opt.stride = cp.stride !== undefined ? +cp.stride : undefined;
                     opt.l1_decay_mul = p && p.length && p[0].decay_mult !== undefined ? +p[0].decay_mult : 0.0;
                     opt.l2_decay_mul = p && p.length && p[1].decay_mult !== undefined ? +p[1].decay_mult : 1.0;
+                    opt.group = cp.group !== undefined ? +cp.group : 1;
                     layer = new Net.ConvLayer(opt);
                     break;
                 case 'lrn':
@@ -6159,31 +6177,12 @@ var Net;
                         .then(function (response) { return response.arrayBuffer(); })
                         .then(function (arrayBuffer) {
                         var f = new Float32Array(arrayBuffer);
-                        var n = layer.sx * layer.sy * layer.in_depth;
-                        // if (layer.layer_type != 'fc'){
+                        var n = layer.num_inputs === undefined
+                            ? Math.ceil(layer.sx * layer.sy * layer.in_depth / layer.conv_groups)
+                            : layer.num_inputs;
                         for (var i = 0; i < layer.out_depth; i++) {
                             layer.filters[i].w.set(f.slice(i * n, i * n + n));
                         }
-                        // }
-                        // // Hack: this should be done in convert_caffemodel
-                        // // but it is tricky there
-                        // else {
-                        //   var sx = layer.in_sx;
-                        //   var sy = layer.in_sy;
-                        //   var depth = layer.in_depth;
-                        //   for(let i=0; i<layer.out_depth; i++) {
-                        //     let fi = layer.filters[i];
-                        //     let A = f.slice(i*n, i*n+n);
-                        //     for (let x=0; x<sx; x++) {
-                        //       for (let y=0; y<sy; y++) {
-                        //         for (let d=0; d<depth; d++) {
-                        //           let ix = ((sx * y) + x) * depth + d;
-                        //           fi.set(x, y, d, A[ix]);
-                        //         }
-                        //       }
-                        //     }
-                        // }
-                        // }
                     }),
                     fetch(_this.weightPath + layer.name + '_bias.bin')
                         .then(function (response) { return response.arrayBuffer(); })
@@ -6209,6 +6208,12 @@ var Net;
 var ImgJS;
 (function (ImgJS) {
     var nj = NumJS;
+    // TODO
+    // image.size = image.width, image.height
+    // 
+    // Implement the Vol functions
+    // image.resize()
+    // image.roll()
     var Image = (function () {
         function Image(src) {
             this.src = src;
@@ -6234,7 +6239,8 @@ var ImgJS;
                     _this.data = imgData.data;
                     resolve(_this.data);
                 };
-                _this.image.src = _this.src;
+                _this.image.src = _this.src + '?' + new Date().getTime();
+                _this.image.setAttribute('crossOrigin', '');
             });
         };
         Image.prototype.render = function (canvas) {

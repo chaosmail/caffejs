@@ -11,9 +11,9 @@ sys.path.insert(0, caffe_root + 'python')
 
 import caffe
 
-dir_  = "bvlc_googlenet"
+dir_  = "bvlc_alexnet"
 proto = "deploy.prototxt"
-model = "bvlc_googlenet.caffemodel"
+model = "bvlc_alexnet.caffemodel"
 
 # Set the right path to your model definition file, pretrained model weights,
 # and the image you would like to classify.
@@ -44,20 +44,13 @@ for key in net.params:
   print("Expected Shape: ", nb_filter, stack_size, nb_col, nb_row)  
   print("Found Shape: ", np.array(blobs[0].data).shape)
 
-  weights_p = blobs[0].data.astype(dtype=np.float32)
+  weights_p = blobs[0].data.reshape((nb_filter, stack_size, nb_col, nb_row)).astype(dtype=np.float32)
   weights_b = blobs[1].data.astype(dtype=np.float32)
 
   if len(weights_p.shape) > 2:
     # Caffe uses the shape f, (d, y, x)
     # ConvnetJS uses the shape f, (y, x, d)
     weights_p = np.swapaxes(np.swapaxes(weights_p, 3, 1), 2, 1)
-
-  # else:
-    # sx = int(np.sqrt(stack_size / prev_shape[0])) or 1
-    # sy = sx or 1
-    # depth = prev_shape[0]
-    # print(depth, sy, sx)   
-    # weights_p = weights_p.reshape((nb_filter, depth, sy, sx))
 
   print("Converted to Shape: ", weights_p.shape)
 

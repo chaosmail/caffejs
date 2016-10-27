@@ -23,11 +23,9 @@ Check out the project page hosted on [Github](https://chaosmail.github.io/caffej
 
 ## What's left to do
 
-* Debug and fix issues with FC layer (fix weight conversion from Caffe to ConvNetJS)
 * Debug and fix remaining issues with SoftMax layer
 * Implement AVE pooling backward pass
 * Implement more layers (Eltwise, Scale, BatchNorm) for ResNet
-* Considering missing parameters such as convolution groups
 * Evaluate weight extraction directly from *.caffemodel file (without converting to intermediate binary format)
 * Nice documentation
 * More samples (Selfie Net, Gender- and AgeNet, Facial Expression Recognition, Segmentation, etc.)
