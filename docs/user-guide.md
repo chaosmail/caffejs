@@ -46,3 +46,33 @@ You can debug the mean values by rendering the Volume to the screen. Add the fol
 ```js
 ImgJS.Image.fromMean(mean).render();
 ```
+
+## Datasets
+
+### ImageNet
+
+You can use the REST service `http://dl.chaosmail.at/imagenet` to return an URL to a random image form ImageNet  based on `http://image-net.org/download-imageurls` (Fall 2011 Release). However, it contains only the URLs to image hosted on flickr.com over https. It will return an object similar to 
+
+```
+{
+  "error":false,
+  "id":"n02309337_1503",
+  "url":"https://farm2.static.flickr.com/1307/530884297_e93108e136.jpg"
+}
+
+```
+
+Using the `fetch` API and `ImgJS` you can load a new random image via following code
+
+```
+var apiUrl = 'https://dl.chaosmail.at/imagenet';
+fetch(new Request(apiUrl)).then(function(response){
+  response.json().then(function(d){
+    console.log('Loading image ' + d.url);
+    image = new ImgJS.Image(d.url);
+    image.load().then(function(){
+      image.render();
+    });
+  });
+});
+```
