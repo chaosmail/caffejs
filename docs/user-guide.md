@@ -53,7 +53,7 @@ ImgJS.Image.fromMean(mean).render();
 
 You can use the REST service `http://dl.chaosmail.at/imagenet` to return an URL to a random image form ImageNet  based on `http://image-net.org/download-imageurls` (Fall 2011 Release). However, it contains only the URLs to image hosted on flickr.com over https. It will return an object similar to 
 
-```
+```json
 {
   "error":false,
   "id":"n02309337_1503",
@@ -64,7 +64,7 @@ You can use the REST service `http://dl.chaosmail.at/imagenet` to return an URL 
 
 Using the `fetch` API and `ImgJS` you can load a new random image via following code
 
-```
+```javascript
 var apiUrl = 'https://dl.chaosmail.at/imagenet';
 fetch(new Request(apiUrl)).then(function(response){
   response.json().then(function(d){
