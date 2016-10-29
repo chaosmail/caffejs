@@ -29,3 +29,17 @@ You can use the script `scripts/convert_caffemodel.py` to convert `*.caffemodel`
 ## Deploy the docs
 
 Run `gulp deploy` to build the `docs-pages` folder and deploy it to Github.
+
+## Datasets
+
+To convert the dataset file `fall11_urls.txt` from `http://image-net.org/download-imageurls` to a cleaned https dataset on flickr you need to run the following command
+
+```
+cat fall11_urls.txt | grep flickr | sed 's/\t/,/g' | sed 's/http/https/g'  > fall11_urls.csv
+```
+
+Afterwards, the CSV file can be imported to mongodb via the command
+
+```
+mongoimport -d imagenet -c urls --fields id,url --type csv fall11_urls.csv
+```

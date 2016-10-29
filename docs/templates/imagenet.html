@@ -162,12 +162,13 @@
   nextImage();
 
   function nextImage() {
-    var apiUrl = 'https://crossorigin.me/http://dl.chaosmail.at/imagenet' + '?' + new Date().getTime();
+    // Add a timestamp to prevent caching
+    var apiUrl = 'https://dataset.at/imagenet/sample/' + '?' + new Date().getTime();
     var req = new Request(apiUrl);
     fetch(req).then(function(response){
       response.json().then(function(d){
-        console.log('Loading image ' + d.url);
-        image = new ImgJS.Image(d.url);
+        console.log('Loading image ' + d.data.url);
+        image = new ImgJS.Image(d.data.url);
         image.load().then(function(){
           image.render($imgSrc);
         });
