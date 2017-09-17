@@ -11,6 +11,7 @@
     ],
     "exampleFiles": [
       "docs/templates/models.html",
+      "docs/templates/creator.html",
       "docs/templates/webcam.html",
       "docs/templates/imagenet.html",
       "docs/templates/deepdream.html"

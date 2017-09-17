@@ -12,7 +12,7 @@ namespace Net {
 
     public name: string;
 
-    constructor(private modelPath: string, private weightPath?: string) {
+    constructor(private modelPath?: string, private weightPath?: string) {
       super();
     }
 
@@ -20,6 +20,12 @@ namespace Net {
       return this.fetch(this.modelPath)
         .then((model) => this.create(model))
         .then((model) => this.loadWeights());
+    }
+
+    fromText(def: string) {
+      var protoParser = new Parser.PrototxtParser();
+      this.create(protoParser.parseString(def))
+      return this;
     }
 
     fetch(url: string) {
@@ -31,7 +37,7 @@ namespace Net {
       this.name = model.name;
 
       this.createLayers(model, model.layer || model.layers, model.input === 'data');
-      this.createEdges()
+      this.createEdges();
     }
 
     caffeLayerToJs(layerOpt: any): ILayer {

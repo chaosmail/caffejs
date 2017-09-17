@@ -65,7 +65,10 @@ namespace Net {
     }
 
     getOutputShape() {
-      return [this.in_depth, this.in_sy, this.in_sx];
+      if (this.in_sy && this.in_sx) {
+        return [this.in_depth, this.in_sy, this.in_sx];
+      }
+      return [this.in_depth];
     }
 
     getDescription(){   

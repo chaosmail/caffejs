@@ -136,6 +136,10 @@ namespace Net {
       return [this.out_depth, 1, 1]
     }
 
+    getDescription(){   
+     return [this.layer_type.toUpperCase(), this.name, this.out_depth.toString()];
+    }
+
     toJSON() {
       var json: any = super.toJSON();
       json.num_inputs = this.num_inputs;

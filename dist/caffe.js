@@ -4708,7 +4708,10 @@ var Net;
             return [0, 0];
         };
         BaseLayer.prototype.getOutputShape = function () {
-            return [this.in_depth, this.in_sy, this.in_sx];
+            if (this.in_sy && this.in_sx) {
+                return [this.in_depth, this.in_sy, this.in_sx];
+            }
+            return [this.in_depth];
         };
         BaseLayer.prototype.getDescription = function () {
             return [this.layer_type.toUpperCase(), this.name];
@@ -5339,6 +5342,9 @@ var Net;
         };
         FullyConnectedLayer.prototype.getOutputShape = function () {
             return [this.out_depth, 1, 1];
+        };
+        FullyConnectedLayer.prototype.getDescription = function () {
+            return [this.layer_type.toUpperCase(), this.name, this.out_depth.toString()];
         };
         FullyConnectedLayer.prototype.toJSON = function () {
             var json = _super.prototype.toJSON.call(this);
@@ -6019,6 +6025,11 @@ var Net;
             return this.fetch(this.modelPath)
                 .then(function (model) { return _this.create(model); })
                 .then(function (model) { return _this.loadWeights(); });
+        };
+        CaffeModel.prototype.fromText = function (def) {
+            var protoParser = new Parser.PrototxtParser();
+            this.create(protoParser.parseString(def));
+            return this;
         };
         CaffeModel.prototype.fetch = function (url) {
             var protoParser = new Parser.PrototxtParser();

@@ -4,11 +4,12 @@
 {% block title %}ImageNet Classification{% endblock %}
 
 {% block header %}
-<!-- For accessing the webcam -->
-<script src="libs/webcam.min.js"></script>
-
 <script src="libs/d3.min.js"></script>
 <script src="dist/caffe.js"></script>
+
+<script src="libs/long.min.js"></script>
+<script src="libs/bytebuffer.min.js"></script>
+<script src="libs/protobuf.min.js"></script>
 
 <!-- For drawing the graph -->
 <script src="libs/lodash.min.js"></script>
@@ -57,7 +58,7 @@
   <div class="mdl-cell mdl-cell--12-col mdl-grid">
     
     <!-- Webcam Input -->
-    <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--5-col">
+    <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--12-col">
       <div class="mdl-card__media">
         <canvas class="image-src"></canvas>
       </div>
@@ -67,6 +68,10 @@
       <div class="mdl-card__supporting-text">
         Feed a picture from ImageNet into the deep neural network running entirely in your browser.
       </div>
+      <div class="model-container">
+        <div class="model-layout"></div>
+        <div class="mdl-spinner mdl-js-spinner is-active model-loading"></div>
+      </div>
       <div class="mdl-card__actions mdl-card--border">
         <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--raised" data-upgraded=",MaterialButton,MaterialRipple" onclick="nextImage()">
         Next<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>
@@ -74,30 +79,6 @@
         Classify<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>
       </div>
     </div>
-  
-    <!-- Model Overview -->
-    <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--7-col">
-      <div class="mdl-card__media">
-        <div class="model-container">
-          <div class="model-layout"></div>
-          <div class="mdl-spinner mdl-js-spinner is-active model-loading"></div>
-        </div>
-      </div>
-      <div class="mdl-card__title">
-        <h2 class="mdl-card__title-text">Alexnet</h2>
-      </div>
-      <div class="mdl-card__supporting-text">
-        Using <a href="https://github.com/BVLC/caffe/tree/master/models/bvlc_alexnet" target="_new">bvlc_alexnet</a> (240 MB) trained on ImageNet.
-        <br><em>A. Krizhevsky, I. Sutskever and G. Hinton, “ImageNet Classification with Deep Convolutional Neural Networks”, in Advances in Neural Information Processing Systems, 2012</em>
-      </div>
-      <div class="mdl-card__actions mdl-card--border">
-        <a href="https://arxiv.org/pdf/1409.4842v1.pdf" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-upgraded=",MaterialButton,MaterialRipple">
-        Paper<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></a>
-        <a href="models.html#alexnet" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-upgraded=",MaterialButton,MaterialRipple">
-        Model Structure<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></a>
-      </div>
-    </div>
-
   </div>
   
   <div class="mdl-cell mdl-cell--12-col mdl-grid results" style="display: none;">
@@ -149,17 +130,31 @@
   var format = d3.format('.2%');
 
   var labels;
-  d3.text('data/ilsvrc12/synset_words.txt', function(data){
+  d3.text('models/caffenet/caffe_label_file.txt', function(data){
     labels = data.split('\n').map(function(d){
-      return d.substr(10);
+      return d.split(" ")[1];
     });
   });
 
-  // the mean value can be found in train_val.prototxt
-  var mean = [104.0, 116.0, 122.0];
-  
-  loadModel();
-  nextImage();
+  var mean;
+  var p = new Parser.BlobProtoParser();
+  p.parse('models/caffenet/mean.binaryproto').then(function(data){
+    mean = data;
+
+    console.log('Mean', mean)
+
+    loadModel();
+    initialImage();
+  });
+
+  function initialImage() {
+    // Add a timestamp to prevent caching
+    var imgUrl = 'models/caffenet/hongbao.jpg';
+    image = new ImgJS.Image(imgUrl);
+    image.load().then(function(){
+      image.render($imgSrc);
+    });
+  }
 
   function nextImage() {
     // Add a timestamp to prevent caching
@@ -211,8 +206,8 @@
   function loadModel() {
 
     model = new Net.CaffeModel(
-      'models/bvlc_alexnet/deploy.prototxt',
-      'models/bvlc_alexnet/weights/'
+      'models/caffenet/simple_net_deploy.prototxt',
+      'models/caffenet/weights/'
     );
 
     model.load().then(function(){

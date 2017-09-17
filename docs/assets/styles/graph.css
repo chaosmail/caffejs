@@ -28,8 +28,8 @@ text {
 
 .node rect {
   stroke: #000;
-  fill: #fff;
-  stroke-width: 1.5px;
+  fill: #ddd;
+  stroke: none;
 }
 
 .edgePath path {
