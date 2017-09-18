@@ -1,1 +1,0 @@
-/// <reference path="src/_index.ts" />

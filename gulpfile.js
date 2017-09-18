@@ -32,10 +32,10 @@ gulp.task('clean/docs/build', () => {
 
 gulp.task('compile/scripts', ['clean/build'], () => {
 
-  var tsResult = tsProject.src()
+  var tsResult = gulp.src(cfg.paths.scripts)
     .pipe(plumber())
     //.pipe(sourcemaps.init())
-    .pipe(ts(tsProject));
+    .pipe(tsProject());
 
   return tsResult.js
     //.pipe(sourcemaps.write())

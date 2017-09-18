@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/chaosmail/caffejs.svg?branch=master)](https://travis-ci.org/chaosmail/caffejs)
+
 # CaffeJS
 
 This repo is a proof of concept for porting Caffe models to the browser using a modified version of [ConvNetJS (by Andrej Karpathy)](https://github.com/karpathy/convnetjs). It aims to help beginners to dive into Deep Neural Networks by using only a browser. Try out the ImageNet Classification using GoogleNet or the DeepDream entirely in your browser!
