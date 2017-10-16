@@ -1,59 +1,68 @@
-import * as d3 from 'd3';
+/// <reference path="../ImgJS/_module.ts" />
+/// <reference path="../NumJS/_module.ts" />
 
-import Net from '../Net/Net';
-import Image from '../ImgJS/Image';
+//import * as d3 from 'd3';
 
-export default class ActivationDrawer extends Net {
+namespace Utils {
+  
+  // declare variables
+  declare var d3: any;
+  
+  const nj = NumJS;
+  const im = ImgJS;
 
-  constructor() {
-    super();
-  }
+  export class ActivationDrawer extends Net.Model {
 
-  render(element, renderInput: boolean = true, maxElementsPerLayer?: number, width?, height?) {
-    // Clean
-    var $elem = d3.select(element);
-    $elem.selectAll('*').remove();
+    constructor() {
+      super();
+    }
 
-    this.layerIterator(function(layer, j){
+    render(element, renderInput: boolean = true, maxElementsPerLayer?: number, width?, height?) {
+      // Clean
+      var $elem = d3.select(element);
+      $elem.selectAll('*').remove();
 
-      if (!renderInput && j == 0) {
-        return;
-      }
+      this.layerIterator(function(layer, j){
 
-      $elem.append('h5').text(layer.name);
-      
-      var $div = $elem.append('div')
-        .attr('class', 'net-layer');
-      
-      var $vis = $div.append('div')
-        .attr('class', 'net-vis');
-
-      var $weights = $vis.append('div')
-        .attr('class', 'net-weights');
-
-      var $activations = $vis.append('div')
-        .attr('class', 'net-activations');
-
-      for (let i=0, len=layer.out_act.depth; i<len; ++i){
-        if (maxElementsPerLayer && i >= maxElementsPerLayer){
+        if (!renderInput && j == 0) {
           return;
         }
-        let $canv: any = $activations.append('canvas');
-        let A = layer.out_act;
 
-        // if (width && height){
-        //   A = A.zoom(width / A.sx, height / A.sy);
-        // }
+        $elem.append('h5').text(layer.name);
+        
+        var $div = $elem.append('div')
+          .attr('class', 'net-layer');
+        
+        var $vis = $div.append('div')
+          .attr('class', 'net-vis');
 
-        Image.fromFilter(A, i, 1).render($canv[0][0]);
-      }
-    });
-  }
+        var $weights = $vis.append('div')
+          .attr('class', 'net-weights');
 
-  static fromNet(model: Net){
-    var g = new ActivationDrawer;
-    g.layers = model.layers;
-    g.edges = model.edges;
-    return g;
+        var $activations = $vis.append('div')
+          .attr('class', 'net-activations');
+
+        for (let i=0, len=layer.out_act.depth; i<len; ++i){
+          if (maxElementsPerLayer && i >= maxElementsPerLayer){
+            return;
+          }
+          let $canv: any = $activations.append('canvas');
+          let A = layer.out_act;
+
+          // if (width && height){
+          //   A = A.zoom(width / A.sx, height / A.sy);
+          // }
+
+          im.Image.fromFilter(A, i, 1).render($canv[0][0]);
+        }
+      });
+    }
+
+    static fromNet(model: Net.Model){
+      var g = new ActivationDrawer;
+      g.layers = model.layers;
+      g.edges = model.edges;
+      return g;
+    }
   }
 }

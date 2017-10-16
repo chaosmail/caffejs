@@ -1,7 +1,9 @@
 {
   "buildDir": "dist/",
   "paths": {
-    "scripts": "src/**/*.ts"
+    "scripts": [
+      "src/**/*.ts"
+    ]
   },
   "docs": {
     "srcFiles": [

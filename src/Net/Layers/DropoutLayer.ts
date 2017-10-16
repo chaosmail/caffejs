@@ -1,76 +1,77 @@
-import BaseLayer from './BaseLayer';
-import Vol from '../Vol';
-import {ILayer} from '../ILayer';
-import {getopt} from '../Utils';
-import * as nj from '../../NumJS/_module';
+/// <reference path="./BaseLayer.ts" />
 
-// An inefficient dropout layer
-// Note this is not most efficient implementation since the layer before
-// computed all these activations and now we're just going to drop them :(
-// same goes for backward pass. Also, if we wanted to be efficient at test time
-// we could equivalently be clever and upscale during train and copy pointers during test
-// todo: make more efficient.
-export default class DropoutLayer extends BaseLayer implements ILayer {
+namespace Net.Layers {
 
-  public layer_type: string = 'dropout';
+  const nj = NumJS;
 
-  public in_act: Vol;
-  public out_act: Vol;
+  // An inefficient dropout layer
+  // Note this is not most efficient implementation since the layer before
+  // computed all these activations and now we're just going to drop them :(
+  // same goes for backward pass. Also, if we wanted to be efficient at test time
+  // we could equivalently be clever and upscale during train and copy pointers during test
+  // todo: make more efficient.
+  export class DropoutLayer extends BaseLayer implements ILayer {
 
-  public drop_prob: number;
-  public dropped: Int8Array;
+    public layer_type: string = 'dropout';
 
-  constructor(opt) {
-    super(opt || {});
+    public in_act: Vol;
+    public out_act: Vol;
 
-    this.drop_prob = getopt(opt, ['drop_prob'], 0.5);
+    public drop_prob: number;
+    public dropped: Int8Array;
 
-    this.updateDimensions(opt.pred);
-  }
+    constructor(opt) {
+      super(opt || {});
 
-  forward(V, is_training = false) {
-    this.in_act = V;
-    this.resetGradient();
-    this.dropped = nj.zeros(this.out_sx * this.out_sy * this.out_depth, Int8Array);
-    var V2 = V.clone();
-    var N = V.w.length;
-    if (is_training) {
-      // do dropout
+      this.drop_prob = getopt(opt, ['drop_prob'], 0.5);
+
+      this.updateDimensions(opt.pred);
+    }
+
+    forward(V, is_training = false) {
+      this.in_act = V;
+      this.resetGradient();
+      this.dropped = nj.zeros(this.out_sx * this.out_sy * this.out_depth, Int8Array);
+      var V2 = V.clone();
+      var N = V.w.length;
+      if (is_training) {
+        // do dropout
+        for (var i = 0; i < N; i++) {
+          // drop!
+          if (Math.random() < this.drop_prob) {
+            V2.w[i] = 0;
+            this.dropped[i] = 1;
+          }
+          else {
+            // scale the activations during training
+            V2.w[i] *= this.drop_prob;
+          }
+        }
+      }
+      this.out_act = V2;
+      return this.out_act; // dummy identity function for now
+    }
+
+    backward() {
+      var V = this.in_act; // we need to set dw of this
+      var chain_grad = this.out_act;
+      var N = V.w.length;
       for (var i = 0; i < N; i++) {
-        // drop!
-        if (Math.random() < this.drop_prob) {
-          V2.w[i] = 0;
-          this.dropped[i] = 1;
-        }
-        else {
-          // scale the activations during training
-          V2.w[i] *= this.drop_prob;
+        if (this.dropped[i] !== 1) {
+          V.dw[i] += chain_grad.dw[i]; // copy over the gradient
         }
       }
     }
-    this.out_act = V2;
-    return this.out_act; // dummy identity function for now
-  }
 
-  backward() {
-    var V = this.in_act; // we need to set dw of this
-    var chain_grad = this.out_act;
-    var N = V.w.length;
-    for (var i = 0; i < N; i++) {
-      if (this.dropped[i] !== 1) {
-        V.dw[i] += chain_grad.dw[i]; // copy over the gradient
-      }
+    toJSON() {
+      var json: any = super.toJSON();
+      json.drop_prob = this.drop_prob;
+      return json;
     }
-  }
 
-  toJSON() {
-    var json: any = super.toJSON();
-    json.drop_prob = this.drop_prob;
-    return json;
-  }
-
-  fromJSON(json: any) {
-    super.fromJSON(json);
-    this.drop_prob = json.drop_prob;
+    fromJSON(json: any) {
+      super.fromJSON(json);
+      this.drop_prob = json.drop_prob;
+    }
   }
 }

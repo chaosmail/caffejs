@@ -1,15 +1,18 @@
-export abstract class TextParser {
+namespace Parser {
 
-  constructor() {}
+  export abstract class TextParser {
 
-  protected fetch(url: string) {
-    var req = new Request(url);
-    return fetch(req).then((response) => response.text());
-  }
+    constructor() {}
 
-  public parse(url: string) {
-    return this.fetch(url).then((response) => this.parseString(response));
-  }
+    protected fetch(url: string) {
+      var req = new Request(url);
+      return fetch(req).then((response) => response.text());
+    }
 
-  abstract parseString(raw: string);
+    public parse(url: string) {
+      return this.fetch(url).then((response) => this.parseString(response));
+    }
+
+    abstract parseString(raw: string);
+  }  
 }

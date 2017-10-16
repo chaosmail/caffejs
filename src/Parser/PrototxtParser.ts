@@ -1,61 +1,64 @@
-import {TextParser} from './TextParser';
+/// <reference path="./TextParser.ts" />
 
-export default class PrototxtParser extends TextParser {
+namespace Parser {
 
-  parseString(raw: string){
-    return this.parsePrototxt(raw);
-  }
+  export class PrototxtParser extends TextParser {
 
-  parsePrototxt(raw: string, level: number = 0) {
-    var json = {};
-    var match;
-
-    if (level == 0) {
-      var regexVal = /(?:^|\n)(\w+):\s"*([\w/.]+)"*/gi;
-      var regexObj = /(?:^|\n)(\w+)\s\{([\S\s]*?)\n\}/gi;
-    }
-    else {
-      let indent = '(?:^|\\n)\\s{' + level + '}';
-      let key = '(\\w+)';
-      var regexVal = new RegExp(indent + key + '\\s*:\\s*"*([\\w/.]+)"*', "gi");
-      var regexObj = new RegExp(indent + key + '\\s*\\{\\s*\\n([\\s\\S]*?)\\n\\s{' + level + '}\\}', "gi");
+    parseString(raw: string){
+      return this.parsePrototxt(raw);
     }
 
-    while (match = regexVal.exec(raw)) {
-      let key = match[1];
-      let value = match[2];
-      if (json[key] !== undefined) {
-        if (Array.isArray(json[key])) {
-          json[key].push(value);
-        }
-        else {
-          json[key] = [json[key]];
-          json[key].push(value);
-        }
+    parsePrototxt(raw: string, level: number = 0) {
+      var json = {};
+      var match;
+
+      if (level == 0) {
+        var regexVal = /(?:^|\n)(\w+):\s"*([\w/.]+)"*/gi;
+        var regexObj = /(?:^|\n)(\w+)\s\{([\S\s]*?)\n\}/gi;
       }
       else {
-        json[match[1]] = value;
+        let indent = '(?:^|\\n)\\s{' + level + '}';
+        let key = '(\\w+)';
+        var regexVal = new RegExp(indent + key + '\\s*:\\s*"*([\\w/.]+)"*', "gi");
+        var regexObj = new RegExp(indent + key + '\\s*\\{\\s*\\n([\\s\\S]*?)\\n\\s{' + level + '}\\}', "gi");
       }
-    }
 
-    while (match = regexObj.exec(raw)) {
-      let key = match[1];
-      let value = this.parsePrototxt(match[2], level + 2);
-
-      if (json[key] !== undefined) {
-        if (Array.isArray(json[key])) {
-          json[key].push(value);
+      while (match = regexVal.exec(raw)) {
+        let key = match[1];
+        let value = match[2];
+        if (json[key] !== undefined) {
+          if (Array.isArray(json[key])) {
+            json[key].push(value);
+          }
+          else {
+            json[key] = [json[key]];
+            json[key].push(value);
+          }
         }
         else {
-          json[key] = [json[key]];
-          json[key].push(value);
+          json[match[1]] = value;
         }
       }
-      else {
-        json[key] = value;
-      }
-    }
 
-    return json;
+      while (match = regexObj.exec(raw)) {
+        let key = match[1];
+        let value = this.parsePrototxt(match[2], level + 2);
+
+        if (json[key] !== undefined) {
+          if (Array.isArray(json[key])) {
+            json[key].push(value);
+          }
+          else {
+            json[key] = [json[key]];
+            json[key].push(value);
+          }
+        }
+        else {
+          json[key] = value;
+        }
+      }
+
+      return json;
+    }
   }
 }

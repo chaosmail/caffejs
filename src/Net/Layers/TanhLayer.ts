@@ -1,44 +1,45 @@
-import BaseLayer from './BaseLayer';
-import Vol from '../Vol';
-import {ILayer} from '../ILayer';
-import {getopt} from '../Utils';
-import * as nj from '../../NumJS/_module';
+/// <reference path="./BaseLayer.ts" />
 
-// Implements Tanh nnonlinearity elementwise
-// x -> tanh(x) 
-// so the output is between -1 and 1.
-export default class TanhLayer extends BaseLayer implements ILayer {
+namespace Net.Layers {
 
-  public layer_type: string = 'tanh';
+  const nj = NumJS;
 
-  public in_act: Vol;
-  public out_act: Vol;
+  // Implements Tanh nnonlinearity elementwise
+  // x -> tanh(x) 
+  // so the output is between -1 and 1.
+  export class TanhLayer extends BaseLayer implements ILayer {
 
-  constructor(opt) {
-    super(opt || {});
+    public layer_type: string = 'tanh';
 
-    this.updateDimensions(opt.pred);
-  }
+    public in_act: Vol;
+    public out_act: Vol;
 
-  forward(V, is_training) {
-    this.in_act = V;
-    this.resetGradient();
-    var V2 = V.cloneAndZero();
-    var N = V.w.length;
-    for (var i = 0; i < N; i++) {
-      V2.w[i] = nj.tanh(V.w[i]);
+    constructor(opt) {
+      super(opt || {});
+
+      this.updateDimensions(opt.pred);
     }
-    this.out_act = V2;
-    return this.out_act;
-  }
 
-  backward() {
-    var V = this.in_act; // we need to set dw of this
-    var V2 = this.out_act;
-    var N = V.w.length;
-    for (var i = 0; i < N; i++) {
-      var v2wi = V2.w[i];
-      V.dw[i] += (1.0 - v2wi * v2wi) * V2.dw[i];
+    forward(V, is_training) {
+      this.in_act = V;
+      this.resetGradient();
+      var V2 = V.cloneAndZero();
+      var N = V.w.length;
+      for (var i = 0; i < N; i++) {
+        V2.w[i] = nj.tanh(V.w[i]);
+      }
+      this.out_act = V2;
+      return this.out_act;
+    }
+
+    backward() {
+      var V = this.in_act; // we need to set dw of this
+      var V2 = this.out_act;
+      var N = V.w.length;
+      for (var i = 0; i < N; i++) {
+        var v2wi = V2.w[i];
+        V.dw[i] += (1.0 - v2wi * v2wi) * V2.dw[i];
+      }
     }
   }
 }

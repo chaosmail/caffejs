@@ -30,6 +30,11 @@
     "gulp-typescript": "^3.2.2",
     "gulp-uglify": "^3.0.0",
     "http-server": "^0.10.0",
+    "jasmine-core": "^2.8.0",
+    "karma": "^1.7.1",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-jasmine": "^1.1.0",
+    "karma-phantomjs-launcher": "^1.0.4",
     "nunjucks": "^3.0.1",
     "protobufjs": "^6.8.0",
     "run-sequence": "^2.1.0",
@@ -38,7 +43,7 @@
   "scripts": {
     "start": "cd docs-pages && http-server",
     "build": "gulp",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/karma/bin/karma start karma.conf.js"
   },
   "keywords": [
     "caffe",

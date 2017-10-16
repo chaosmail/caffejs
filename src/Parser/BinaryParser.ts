@@ -1,17 +1,20 @@
-export abstract class BinaryParser {
+namespace Parser {
 
-  constructor() {
-    
+  export abstract class BinaryParser {
+
+    constructor() {
+      
+    }
+
+    protected fetch(url: string) {
+      var req = new Request(url);
+      return fetch(req).then((response) => response.arrayBuffer());
+    }
+
+    public parse(url: string) {
+      return this.fetch(url).then((response) => this.parseBuffer(response));
+    }
+
+    abstract parseBuffer(raw: ArrayBuffer);
   }
-
-  protected fetch(url: string) {
-    var req = new Request(url);
-    return fetch(req).then((response) => response.arrayBuffer());
-  }
-
-  public parse(url: string) {
-    return this.fetch(url).then((response) => this.parseBuffer(response));
-  }
-
-  abstract parseBuffer(raw: ArrayBuffer);
 }

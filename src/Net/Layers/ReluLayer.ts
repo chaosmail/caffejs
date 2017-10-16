@@ -1,45 +1,46 @@
-import BaseLayer from './BaseLayer';
-import Vol from '../Vol';
-import {ILayer} from '../ILayer';
-import {getopt} from '../Utils';
-import * as nj from '../../NumJS/_module';
+/// <reference path="./BaseLayer.ts" />
 
-// Implements ReLU nonlinearity elementwise
-// x -> max(0, x)
-// the output is in [0, inf)
-export default class ReluLayer extends BaseLayer implements ILayer {
+namespace Net.Layers {
 
-  public layer_type: string = 'relu';
+  const nj = NumJS;
 
-  public in_act: Vol;
-  public out_act: Vol;
+  // Implements ReLU nonlinearity elementwise
+  // x -> max(0, x)
+  // the output is in [0, inf)
+  export class ReluLayer extends BaseLayer implements ILayer {
 
-  constructor(opt) {
-    super(opt || {});
+    public layer_type: string = 'relu';
 
-    this.updateDimensions(opt.pred);
-  }
+    public in_act: Vol;
+    public out_act: Vol;
 
-  forward(V, is_training) {
-    this.in_act = V;
-    this.resetGradient();
-    var V2 = V.clone();
-    var N = V.w.length;
-    var V2w = V2.w;
-    for (var i = 0; i < N; i++) {
-      if (V2w[i] < 0) V2w[i] = 0; // threshold at 0
+    constructor(opt) {
+      super(opt || {});
+
+      this.updateDimensions(opt.pred);
     }
-    this.out_act = V2;
-    return this.out_act;
-  }
 
-  backward() {
-    var V = this.in_act; // we need to set dw of this
-    var V2 = this.out_act;
-    var N = V.w.length;
-    for (var i = 0; i < N; i++) {
-      if (V2.w[i] <= 0) V.dw[i] = 0; // threshold
-      else V.dw[i] += V2.dw[i];
+    forward(V, is_training) {
+      this.in_act = V;
+      this.resetGradient();
+      var V2 = V.clone();
+      var N = V.w.length;
+      var V2w = V2.w;
+      for (var i = 0; i < N; i++) {
+        if (V2w[i] < 0) V2w[i] = 0; // threshold at 0
+      }
+      this.out_act = V2;
+      return this.out_act;
+    }
+
+    backward() {
+      var V = this.in_act; // we need to set dw of this
+      var V2 = this.out_act;
+      var N = V.w.length;
+      for (var i = 0; i < N; i++) {
+        if (V2.w[i] <= 0) V.dw[i] = 0; // threshold
+        else V.dw[i] += V2.dw[i];
+      }
     }
   }
 }

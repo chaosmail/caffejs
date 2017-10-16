@@ -1,15 +1,15 @@
-export {default as BaseLayer} from './BaseLayer';
-export {default as ConcatLayer} from './ConcatLayer';
-export {default as ConvLayer} from './ConvLayer';
-export {default as DropoutLayer} from './DropoutLayer';
-export {default as FullyConnectedLayer} from './FullyConnectedLayer';
-export {default as InputLayer} from './InputLayer';
-export {default as LocalResponseNormalizationLayer} from './LocalResponseNormalizationLayer';
-export {default as MaxoutLayer} from './MaxoutLayer';
-export {default as PoolLayer} from './PoolLayer';
-export {default as RegressionLayer} from './RegressionLayer';
-export {default as ReluLayer} from './ReluLayer';
-export {default as SVMLayer} from './SVMLayer';
-export {default as SigmoidLayer} from './SigmoidLayer';
-export {default as SoftmaxLayer} from './SoftmaxLayer';
-export {default as TanhLayer} from './TanhLayer';
+/// <reference path="./BaseLayer.ts" />
+/// <reference path="./ConcatLayer.ts" />
+/// <reference path="./ConvLayer.ts" />
+/// <reference path="./DropoutLayer.ts" />
+/// <reference path="./FullyConnectedLayer.ts" />
+/// <reference path="./InputLayer.ts" />
+/// <reference path="./LocalResponseNormalizationLayer.ts" />
+/// <reference path="./MaxoutLayer.ts" />
+/// <reference path="./PoolLayer.ts" />
+/// <reference path="./RegressionLayer.ts" />
+/// <reference path="./ReluLayer.ts" />
+/// <reference path="./SVMLayer.ts" />
+/// <reference path="./SigmoidLayer.ts" />
+/// <reference path="./SoftmaxLayer.ts" />
+/// <reference path="./TanhLayer.ts" />

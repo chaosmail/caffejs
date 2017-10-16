@@ -1,35 +1,36 @@
-import BaseLayer from './BaseLayer';
-import Vol from '../Vol';
-import {ILayer} from '../ILayer';
-import {getopt} from '../Utils';
-import * as nj from '../../NumJS/_module';
+/// <reference path="./BaseLayer.ts" />
 
-export default class InputLayer extends BaseLayer implements ILayer {
+namespace Net.Layers {
 
-  public layer_type: string = 'input';
+  const nj = NumJS;
 
-  public in_act: Vol;
-  public out_act: Vol;
+  export class InputLayer extends BaseLayer implements ILayer {
 
-  constructor(opt) {
-    super(opt || {});
+    public layer_type: string = 'input';
 
-    // required: depth
-    this.in_depth = getopt(opt, ['in_depth', 'out_depth', 'depth'], 0);
+    public in_act: Vol;
+    public out_act: Vol;
 
-    // optional: default these dimensions to 1
-    this.in_sx = getopt(opt, ['in_sx', 'out_sx', 'sx', 'width'], 1);
-    this.in_sy = getopt(opt, ['in_sy', 'out_sy', 'sy', 'height'], 1);
+    constructor(opt) {
+      super(opt || {});
 
-    this.updateDimensions();
+      // required: depth
+      this.in_depth = getopt(opt, ['in_depth', 'out_depth', 'depth'], 0);
+
+      // optional: default these dimensions to 1
+      this.in_sx = getopt(opt, ['in_sx', 'out_sx', 'sx', 'width'], 1);
+      this.in_sy = getopt(opt, ['in_sy', 'out_sy', 'sy', 'height'], 1);
+
+      this.updateDimensions();
+    }
+    
+    forward (V, is_training) {
+      this.in_act = V;
+      this.resetGradient();
+      this.out_act = V;
+      return this.out_act; // simply identity function for now
+    }
+
+    backward() {}
   }
-  
-  forward (V, is_training) {
-    this.in_act = V;
-    this.resetGradient();
-    this.out_act = V;
-    return this.out_act; // simply identity function for now
-  }
-
-  backward() {}
 }

@@ -1,83 +1,84 @@
-import BaseLayer from './BaseLayer';
-import Vol from '../Vol';
-import {ILayer} from '../ILayer';
-import {getopt} from '../Utils';
-import * as nj from '../../NumJS/_module';
+/// <reference path="./BaseLayer.ts" />
 
-// implements an L2 regression cost layer,
-// so penalizes \sum_i(||x_i - y_i||^2), where x is its input
-// and y is the user-provided array of "correct" values.
-export default class SVMLayer extends BaseLayer implements ILayer {
+namespace Net.Layers {
 
-  public layer_type: string = 'svm';
+  const nj = NumJS;
 
-  public in_act: Vol;
-  public out_act: Vol;
+  // implements an L2 regression cost layer,
+  // so penalizes \sum_i(||x_i - y_i||^2), where x is its input
+  // and y is the user-provided array of "correct" values.
+  export class SVMLayer extends BaseLayer implements ILayer {
 
-  public num_inputs: number;
+    public layer_type: string = 'svm';
 
-  constructor(opt) {
-    super(opt || {});
-    
-    this.updateDimensions(opt.pred);
-  }
+    public in_act: Vol;
+    public out_act: Vol;
 
-  forward(V, is_training) {
-    this.in_act = V;
-    this.resetGradient();
-    this.out_act = V;
-    return V; // identity function
-  }
+    public num_inputs: number;
 
-  backward(y) {
+    constructor(opt) {
+      super(opt || {});
+      
+      this.updateDimensions(opt.pred);
+    }
 
-    // compute and accumulate gradient wrt weights and bias of this layer
-    var x = this.in_act;
+    forward(V, is_training) {
+      this.in_act = V;
+      this.resetGradient();
+      this.out_act = V;
+      return V; // identity function
+    }
 
-    // we're using structured loss here, which means that the score
-    // of the ground truth should be higher than the score of any other 
-    // class, by a margin
-    var yscore = x.w[y]; // score of ground truth
-    var margin = 1.0;
-    var loss = 0.0;
-    for (var i = 0; i < this.out_depth; i++) {
-      if (y === i) { continue; }
-      var ydiff = -yscore + x.w[i] + margin;
-      if (ydiff > 0) {
-        // violating dimension, apply loss
-        x.dw[i] += 1;
-        x.dw[y] -= 1;
-        loss += ydiff;
+    backward(y) {
+
+      // compute and accumulate gradient wrt weights and bias of this layer
+      var x = this.in_act;
+
+      // we're using structured loss here, which means that the score
+      // of the ground truth should be higher than the score of any other 
+      // class, by a margin
+      var yscore = x.w[y]; // score of ground truth
+      var margin = 1.0;
+      var loss = 0.0;
+      for (var i = 0; i < this.out_depth; i++) {
+        if (y === i) { continue; }
+        var ydiff = -yscore + x.w[i] + margin;
+        if (ydiff > 0) {
+          // violating dimension, apply loss
+          x.dw[i] += 1;
+          x.dw[y] -= 1;
+          loss += ydiff;
+        }
       }
+
+      return loss;
     }
 
-    return loss;
-  }
+    updateDimensions(pred: ILayer[]) {
 
-  updateDimensions(pred: ILayer[]) {
-
-    if (pred){
-      this.in_sx = pred[0].out_sx;
-      this.in_sy = pred[0].out_sy;
-      this.in_depth = pred[0].out_depth;
+      if (pred){
+        this.in_sx = pred[0].out_sx;
+        this.in_sy = pred[0].out_sy;
+        this.in_depth = pred[0].out_depth;
+      }
+      
+      this.num_inputs = this.in_sx * this.in_sy * this.in_depth;
+      this.out_depth = this.num_inputs;
     }
-    
-    this.num_inputs = this.in_sx * this.in_sy * this.in_depth;
-    this.out_depth = this.num_inputs;
-  }
 
-  getOutputShape() {
-    return [this.out_depth, 1, 1]
-  }
+    getOutputShape() {
+      return [this.out_depth, 1, 1]
+    }
 
-  toJSON() {
-    var json: any = super.toJSON();
-    json.num_inputs = this.num_inputs;
-    return json;
-  }
+    toJSON() {
+      var json: any = super.toJSON();
+      json.num_inputs = this.num_inputs;
+      return json;
+    }
 
-  fromJSON(json: any) {
-    super.fromJSON(json);
-    this.num_inputs = json.num_inputs;
+    fromJSON(json: any) {
+      super.fromJSON(json);
+      this.num_inputs = json.num_inputs;
+    }
   }
 }

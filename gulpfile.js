@@ -9,7 +9,8 @@ const nunjucks = require('gulp-nunjucks');
 const markdown = require('gulp-markdown');
 const header = require('gulp-header');
 const footer = require('gulp-footer');
-var runSequence = require('run-sequence');
+const runSequence = require('run-sequence');
+const karmaServer = require('karma').Server;
 const ghPages = require('gulp-gh-pages');
 
 // Gulp configuration
@@ -32,25 +33,29 @@ gulp.task('clean/docs/build', () => {
 
 gulp.task('compile/scripts', ['clean/build'], () => {
 
-  var tsResult = gulp.src(cfg.paths.scripts)
+  return gulp.src(cfg.paths.scripts)
     .pipe(plumber())
-    //.pipe(sourcemaps.init())
-    .pipe(tsProject());
-
-  return tsResult.js
-    //.pipe(sourcemaps.write())
+    .pipe(sourcemaps.init())
+    .pipe(tsProject()).js
     .pipe(gulp.dest(cfg.buildDir))
     .pipe(uglify())
-    .pipe(rename({
-      suffix: '.min'
-    }))
+    .pipe(rename({suffix: '.min'}))
+    .pipe(sourcemaps.write('.'))
     .pipe(gulp.dest(cfg.buildDir));
+});
+
+gulp.task('test/spec', (done) => {
+  new karmaServer({
+    configFile: __dirname + '/karma.conf.js',
+    singleRun: true
+  }, done).start();
 });
 
 gulp.task('scripts', (callback) => {
   runSequence(
     'clean/build',
     'compile/scripts',
+    'test/spec',
     callback);
 });
 
