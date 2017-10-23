@@ -12,21 +12,19 @@
 <script src="libs/graphlib.core.min.js"></script>
 <script src="libs/dagre.core.min.js"></script>
 <script src="libs/dagre-d3.core.min.js"></script>
+<script src="libs/svg-pan-zoom.min.js"></script>
 <link rel="stylesheet" href="styles/graph.css">
-
-<style>
-
-</style>
 
 {% endblock %}
 
 {% block content %}
 <div class="mdl-grid grid-container">
-  <div class="mdl-card mdl-cell mdl-cell--12-col mdl-grid">
+  <div class="mdl-cell mdl-cell--6-col mdl-grid">
     <div class="controls">
       <select>
         <option value="alexnet">AlexNet</option>
         <option selected="selected" value="googlenet">GoogLeNet</option>
+        <option value="squeezenet">SqueezeNet</option>
         <option value="vgg-cnn-s">VGG CNN S</option>
         <option value="vgg-cnn-m">VGG CNN M</option>
         <option value="vgg-cnn-f">VGG CNN F</option>
@@ -34,13 +32,25 @@
         <option value="vgg-16">VGG ILSVRC 16</option>
         <option value="vgg-19">VGG ILSVRC 19</option>
         <option value="nin">NiN</option>
-<!--
-        Needs some layers first!
+
+        <!--Needs some layers first!
         <option value="models/ResNet/ResNet-50-deploy.prototxt">ResNet-50</option>
         <option value="models/ResNet/ResNet-101-deploy.prototxt">ResNet-101</option>
-        <option value="models/ResNet/ResNet-152-deploy.prototxt">ResNet-152</option>   -->
+        <option value="models/ResNet/ResNet-152-deploy.prototxt">ResNet-152</option>-->
       </select>
     </div>
+  </div>
+  <div class="mdl-cell mdl-cell--3-col">
+    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-compact">
+      <input type="checkbox" id="switch-compact" class="mdl-switch__input" checked>
+      <span class="mdl-switch__label">Compact</span>
+    </label>
+  </div>
+  <div class="mdl-cell mdl-cell--3-col">
+    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-zoom">
+      <input type="checkbox" id="switch-zoom" class="mdl-switch__input">
+      <span class="mdl-switch__label">Zoom</span>
+    </label>
   </div>
   <div class="mdl-cell mdl-cell--12-col">
     <div class="model"></div>
@@ -50,8 +60,9 @@
 <script language="JavaScript">
 
 var urls = {
-  'alexnet': 'models/bvlc_alexnet/deploy.prototxt',
+  'alexnet': 'models/bvlc_alexnet/compact.prototxt',
   'googlenet': 'models/bvlc_googlenet/deploy.prototxt',
+  'squeezenet': 'models/squeezenet/compact.prototxt',
   'vgg-cnn-s': 'models/VGG_CNN_S/deploy.prototxt',
   'vgg-cnn-m': 'models/VGG_CNN_M/deploy.prototxt',
   'vgg-cnn-f': 'models/VGG_CNN_F/deploy.prototxt',
@@ -61,19 +72,25 @@ var urls = {
   'nin': 'models/nin_imagenet/deploy.prototxt',
 }
 
+var panZoomInstance;
+
 function loadModel(url) {
 
   // Let's create a new model from Caffe
   var model = new Net.CaffeModel(url);
   
+  var comapct = d3.select('#switch-compact').property("checked");
+
   model.load().then(function(d){
     
     // Debug the structure
     model.debugStructure();
 
     // Render the Graph structure
-    var dag = Utils.GraphDrawer.fromNet(model);
-    dag.render('.model', 900);
+    var dag = Utils.GraphDrawer.fromNet(model, comapct);
+    dag.render('.model', '100%');
+
+    initZoom();
   });
 }
 
@@ -81,6 +98,53 @@ d3.select('.controls > select').on('change', function(){
   var model = d3.select('.controls > select').property("value");
   console.clear();
   loadModel(urls[model]);
+});
+
+d3.select('#switch-compact').on('change', function(){
+  var model = d3.select('.controls > select').property("value");
+  console.clear();
+  loadModel(urls[model]);
+});
+
+var moveZoomControlsToTop = function() {
+  var transform = d3.select('#svg-pan-zoom-controls').attr('transform');
+  if (transform) {
+    var transformTop = transform.replace(/translate\((\d*)\s+(\d*)\)/, "translate($1 0)");
+    d3.select('#svg-pan-zoom-controls').attr('transform', transformTop);
+  }
+}
+
+var initZoom = function() {
+  panZoomInstance = svgPanZoom('.model > svg', {
+    zoomEnabled: false,
+    controlIconsEnabled: false,
+    fit: false,
+    center: false,
+    minZoom: 0.001
+  });
+
+  updateZoom();
+}
+
+var updateZoom = function() {
+  var zoom =  d3.select('#switch-zoom').property("checked");
+  if (panZoomInstance) {
+    if (zoom) {
+      panZoomInstance.enableControlIcons();
+      panZoomInstance.enablePan();
+      panZoomInstance.enableZoom();
+      moveZoomControlsToTop();
+    }
+    else {
+      panZoomInstance.disableControlIcons();
+      panZoomInstance.disablePan();
+      panZoomInstance.disableZoom();
+    }
+  }
+}
+
+d3.select('#switch-zoom').on('change', function(){
+  updateZoom();
 });
 
 var hash = window.location.hash.substr(1);
