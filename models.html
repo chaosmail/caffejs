@@ -1,0 +1,215 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>CaffeJS | Deep Learning Models</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Material Design Light -->
+    <link rel="stylesheet" href="libs/material.min.css">
+    <script src="libs/material.min.js"></script>
+    
+    <link rel="stylesheet" href="styles/docs.css">
+
+    
+<script src="libs/d3.min.js"></script>
+<script src="dist/caffe.js"></script>
+
+<!-- For drawing the graph -->
+<script src="libs/lodash.min.js"></script>
+<script src="libs/graphlib.core.min.js"></script>
+<script src="libs/dagre.core.min.js"></script>
+<script src="libs/dagre-d3.core.min.js"></script>
+<script src="libs/svg-pan-zoom.min.js"></script>
+<link rel="stylesheet" href="styles/graph.css">
+
+
+  </head>
+  <body>
+    <!-- Always shows a header, even in smaller screens. -->
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-drawer">
+      <header class="mdl-layout__header">
+        <div class="mdl-layout__header-row">
+          <!-- Title -->
+          <span class="mdl-layout-title">CaffeJS</span>
+          <!-- Add spacer, to align navigation to the right -->
+          <div class="mdl-layout-spacer"></div>
+        </div>
+        <a target="_new" href="https://github.com/chaosmail/caffejs"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+      </header>
+      <div class="mdl-layout__drawer">
+        <span class="mdl-layout-title">CaffeJS</span>
+        <nav class="mdl-navigation">
+          <span class="mdl-navigation__link" href="">Documentation</span>
+          <a class="mdl-navigation__link " href="index.html">Getting Started</a>
+          <a class="mdl-navigation__link " href="user-guide.html">User Guide</a>
+          <a class="mdl-navigation__link " href="development-guide.html">Development Guide</a>
+          <div class="drawer-separator"></div>
+          <span class="mdl-navigation__link" href="">Examples</span>
+          <a class="mdl-navigation__link is-active" href="models.html">Models</a>
+          <a class="mdl-navigation__link " href="creator.html">Model Creator</a>
+          <a class="mdl-navigation__link " href="webcam.html">Webcam (GoogLeNet)</a>
+          <a class="mdl-navigation__link " href="imagenet.html">ImageNet (SqueezeNet)</a>
+          <a class="mdl-navigation__link " href="deepdream.html">DeepDream (GoogLeNet)</a>
+        </nav>
+      </div>
+      <main class="mdl-layout__content">
+        <div class="page-content">
+          
+<div class="mdl-grid grid-container">
+  <div class="mdl-cell mdl-cell--6-col mdl-grid">
+    <div class="controls">
+      <select>
+        <option value="alexnet">AlexNet</option>
+        <option selected="selected" value="googlenet">GoogLeNet</option>
+        <option value="squeezenet">SqueezeNet</option>
+        <option value="vgg-cnn-s">VGG CNN S</option>
+        <option value="vgg-cnn-m">VGG CNN M</option>
+        <option value="vgg-cnn-f">VGG CNN F</option>
+        <option value="vgg-face">VGG_FACE</option>
+        <option value="vgg-16">VGG ILSVRC 16</option>
+        <option value="vgg-19">VGG ILSVRC 19</option>
+        <option value="nin">NiN</option>
+
+        <!--Needs some layers first!
+        <option value="models/ResNet/ResNet-50-deploy.prototxt">ResNet-50</option>
+        <option value="models/ResNet/ResNet-101-deploy.prototxt">ResNet-101</option>
+        <option value="models/ResNet/ResNet-152-deploy.prototxt">ResNet-152</option>-->
+      </select>
+    </div>
+  </div>
+  <div class="mdl-cell mdl-cell--3-col">
+    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-compact">
+      <input type="checkbox" id="switch-compact" class="mdl-switch__input" checked>
+      <span class="mdl-switch__label">Compact</span>
+    </label>
+  </div>
+  <div class="mdl-cell mdl-cell--3-col">
+    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-zoom">
+      <input type="checkbox" id="switch-zoom" class="mdl-switch__input">
+      <span class="mdl-switch__label">Zoom</span>
+    </label>
+  </div>
+  <div class="mdl-cell mdl-cell--12-col">
+    <div class="model"></div>
+  </div>
+</div>
+
+<script language="JavaScript">
+
+var urls = {
+  'alexnet': 'models/bvlc_alexnet/compact.prototxt',
+  'googlenet': 'models/bvlc_googlenet/deploy.prototxt',
+  'squeezenet': 'models/squeezenet/compact.prototxt',
+  'vgg-cnn-s': 'models/VGG_CNN_S/deploy.prototxt',
+  'vgg-cnn-m': 'models/VGG_CNN_M/deploy.prototxt',
+  'vgg-cnn-f': 'models/VGG_CNN_F/deploy.prototxt',
+  'vgg-face': 'models/VGG_FACE/VGG_FACE_deploy.prototxt',
+  'vgg-16': 'models/VGG_ILSVRC_16/deploy.prototxt',
+  'vgg-19': 'models/VGG_ILSVRC_19/deploy.prototxt',
+  'nin': 'models/nin_imagenet/deploy.prototxt',
+}
+
+var panZoomInstance;
+
+function loadModel(url) {
+
+  // Let's create a new model from Caffe
+  var model = new Net.CaffeModel(url);
+  
+  var comapct = d3.select('#switch-compact').property("checked");
+
+  model.load().then(function(d){
+    
+    // Debug the structure
+    model.debugStructure();
+
+    // Render the Graph structure
+    var dag = Utils.GraphDrawer.fromNet(model, comapct);
+    dag.render('.model', '100%');
+
+    initZoom();
+  });
+}
+
+d3.select('.controls > select').on('change', function(){
+  var model = d3.select('.controls > select').property("value");
+  console.clear();
+  loadModel(urls[model]);
+});
+
+d3.select('#switch-compact').on('change', function(){
+  var model = d3.select('.controls > select').property("value");
+  console.clear();
+  loadModel(urls[model]);
+});
+
+var moveZoomControlsToTop = function() {
+  var transform = d3.select('#svg-pan-zoom-controls').attr('transform');
+  if (transform) {
+    var transformTop = transform.replace(/translate\((\d*)\s+(\d*)\)/, "translate($1 0)");
+    d3.select('#svg-pan-zoom-controls').attr('transform', transformTop);
+  }
+}
+
+var initZoom = function() {
+  panZoomInstance = svgPanZoom('.model > svg', {
+    zoomEnabled: false,
+    controlIconsEnabled: false,
+    fit: false,
+    center: false,
+    minZoom: 0.001
+  });
+
+  updateZoom();
+}
+
+var updateZoom = function() {
+  var zoom =  d3.select('#switch-zoom').property("checked");
+  if (panZoomInstance) {
+    if (zoom) {
+      panZoomInstance.enableControlIcons();
+      panZoomInstance.enablePan();
+      panZoomInstance.enableZoom();
+      moveZoomControlsToTop();
+    }
+    else {
+      panZoomInstance.disableControlIcons();
+      panZoomInstance.disablePan();
+      panZoomInstance.disableZoom();
+    }
+  }
+}
+
+d3.select('#switch-zoom').on('change', function(){
+  updateZoom();
+});
+
+var hash = window.location.hash.substr(1);
+
+if (hash) {
+  loadModel(urls[hash]);
+
+  d3.select('.controls > select [selected="selected"]')
+    .attr('selected', '');
+
+  d3.select('.controls > select [value="' + hash + '"]')
+    .attr('selected', 'selected');
+}
+else {
+  loadModel(urls['googlenet']);
+}
+
+
+</script>
+
+        </div>
+      </main>
+    </div>
+
+  <!-- Material Design fonts -->
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  </body>
+</html>

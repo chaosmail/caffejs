@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>CaffeJS | Deep Learning in the Browser</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Material Design Light -->
+    <link rel="stylesheet" href="libs/material.min.css">
+    <script src="libs/material.min.js"></script>
+    
+    <link rel="stylesheet" href="styles/docs.css">
+
+    
+  </head>
+  <body>
+    <!-- Always shows a header, even in smaller screens. -->
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-drawer">
+      <header class="mdl-layout__header">
+        <div class="mdl-layout__header-row">
+          <!-- Title -->
+          <span class="mdl-layout-title">CaffeJS</span>
+          <!-- Add spacer, to align navigation to the right -->
+          <div class="mdl-layout-spacer"></div>
+        </div>
+        <a target="_new" href="https://github.com/chaosmail/caffejs"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+      </header>
+      <div class="mdl-layout__drawer">
+        <span class="mdl-layout-title">CaffeJS</span>
+        <nav class="mdl-navigation">
+          <span class="mdl-navigation__link" href="">Documentation</span>
+          <a class="mdl-navigation__link " href="index.html">Getting Started</a>
+          <a class="mdl-navigation__link " href="user-guide.html">User Guide</a>
+          <a class="mdl-navigation__link " href="development-guide.html">Development Guide</a>
+          <div class="drawer-separator"></div>
+          <span class="mdl-navigation__link" href="">Examples</span>
+          <a class="mdl-navigation__link " href="models.html">Models</a>
+          <a class="mdl-navigation__link " href="creator.html">Model Creator</a>
+          <a class="mdl-navigation__link " href="webcam.html">Webcam (GoogLeNet)</a>
+          <a class="mdl-navigation__link " href="imagenet.html">ImageNet (SqueezeNet)</a>
+          <a class="mdl-navigation__link " href="deepdream.html">DeepDream (GoogLeNet)</a>
+        </nav>
+      </div>
+      <main class="mdl-layout__content">
+        <div class="page-content">
+          
+<h1 id="deep-learning-in-the-browser">Deep Learning in the Browser</h1>
+<p>To run the samples, please execute <code>npm start</code> from the root directory. Make sure you updated all dependencies by running <code>npm install</code> beforehand.</p>
+<h3 id="analyze-deep-learning-structures">Analyze Deep Learning structures</h3>
+<p><a href="https://chaosmail.github.io/caffejs/models.html">The sample <code>models.html</code></a> loads famous Deep Learning Models such as AlexNet, VGG, GoogLeNet, etc. directly in your browser and visualizes the layer graph. It also analyzes their structure and prints detailed information such as the network dimension, number of parameters and network size in memory to the console.</p>
+<p>Here is a break-down of <strong>AlexNet</strong> computed with CaffeJS. The dimensions on the left side define the output dimensions of the current layer <code>d, h, w</code>. The memory size is computed using Float32 (4 byte).</p>
+<pre><code>3x227x227 :: INPUT data
+96x55x55 :: CONV conv1 96x11x11 Stride 4 Pad 0 =&gt; 34,944 parameters
+96x55x55 :: RELU relu1
+96x55x55 :: LRN norm1 alpha 0.0001 beta 0.75 k 1 n 5
+96x27x27 :: MAX POOL pool1 3x3 Stride 2 Pad 0
+256x27x27 :: CONV conv2 256x5x5 Stride 1 Pad 2 =&gt; 614,656 parameters
+256x27x27 :: RELU relu2
+256x27x27 :: LRN norm2 alpha 0.0001 beta 0.75 k 1 n 5
+256x13x13 :: MAX POOL pool2 3x3 Stride 2 Pad 0
+384x13x13 :: CONV conv3 384x3x3 Stride 1 Pad 1 =&gt; 885,120 parameters
+384x13x13 :: RELU relu3
+384x13x13 :: CONV conv4 384x3x3 Stride 1 Pad 1 =&gt; 1,327,488 parameters
+384x13x13 :: RELU relu4
+256x13x13 :: CONV conv5 256x3x3 Stride 1 Pad 1 =&gt; 884,992 parameters
+256x13x13 :: RELU relu5
+256x6x6 :: MAX POOL pool5 3x3 Stride 2 Pad 0
+4096x1x1 :: FC fc6 =&gt; 37,752,832 parameters
+4096x1x1 :: DROPOUT drop6
+4096x1x1 :: RELU relu6
+4096x1x1 :: FC fc7 =&gt; 16,781,312 parameters
+4096x1x1 :: DROPOUT drop7
+4096x1x1 :: RELU relu7
+1000x1x1 :: FC fc8 =&gt; 4,097,000 parameters
+1000x1x1 :: SOFTMAX prob
+---
+Total number of layers 24
+Total number of params 62,378,344 (memory: 249.513376Mb):
+</code></pre><p>Here is a break-down of <strong>GoogLeNet</strong> computed with CaffeJS (please note, that the layers of each inception module are not sequential as shown here but parallel).</p>
+<pre><code>3x224x224 :: INPUT data
+64x113x113 :: CONV conv1/7x7_s2 64x7x7 Stride 2 Pad 3 =&gt; 9,472 parameters
+64x113x113 :: RELU conv1/relu_7x7
+64x56x56 :: MAX POOL pool1/3x3_s2 3x3 Stride 2 Pad 0
+64x56x56 :: LRN pool1/norm1 alpha 0.0001 beta 0.75 k 1 n 5
+64x56x56 :: CONV conv2/3x3_reduce 64x1x1 Stride 1 Pad 0 =&gt; 4,160 parameters
+64x56x56 :: RELU conv2/relu_3x3_reduce
+192x56x56 :: CONV conv2/3x3 192x3x3 Stride 1 Pad 1 =&gt; 110,784 parameters
+192x56x56 :: RELU conv2/relu_3x3
+192x56x56 :: LRN conv2/norm2 alpha 0.0001 beta 0.75 k 1 n 5
+192x28x28 :: MAX POOL pool2/3x3_s2 3x3 Stride 2 Pad 0
+...
+1024x7x7 :: CONCAT inception_5b/output
+1024x1x1 :: AVE POOL pool5/7x7_s1 7x7 Stride 1 Pad 0
+1024x1x1 :: DROPOUT pool5/drop_7x7_s1
+1000x1x1 :: FC loss3/classifier =&gt; 1,025,000 parameters
+1000x1x1 :: SOFTMAX prob
+---
+Total number of layers 143
+Total number of params 6,998,552 (memory: 27.994208Mb):
+</code></pre><p>Please note that these samples don&#39;t load the networks&#39; weights but only the structure with default initialization.</p>
+<h3 id="imagenet-classification-using-googlenet">ImageNet Classification using GoogLeNet</h3>
+<p><a href="https://chaosmail.github.io/caffejs/webcam.html">The demo <code>webcam.html</code></a> uses the pretrained GoogLeNet model from Caffe (trained on ImageNet) to perform classification entirely in your browser using images from your webcam.</p>
+<h3 id="deepdream">DeepDream</h3>
+<p><a href="https://chaosmail.github.io/caffejs/deepdream.html">The <code>deepdream.html</code></a> is a cool example that runs the famous <a href="https://github.com/google/deepdream/blob/master/dream.ipynb">DeepDream</a> demo entirely in your browser - entirely in JavaScript of course. It uses the pretrained GoogLeNet from Caffe and runs the computation as webworker.</p>
+
+        </div>
+      </main>
+    </div>
+
+  <!-- Material Design fonts -->
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  </body>
+</html>

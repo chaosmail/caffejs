@@ -1,0 +1,203 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>CaffeJS | DeepDream</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Material Design Light -->
+    <link rel="stylesheet" href="libs/material.min.css">
+    <script src="libs/material.min.js"></script>
+    
+    <link rel="stylesheet" href="styles/docs.css">
+
+    
+<script src="libs/d3.min.js"></script>
+<script src="dist/caffe.js"></script>
+
+<style>
+  .mdl-progress {
+    width: 100%;
+  }
+  .mdl-progress, .progressbar, .bufferbar {
+    height: 8px;
+  }
+</style>
+
+  </head>
+  <body>
+    <!-- Always shows a header, even in smaller screens. -->
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-drawer">
+      <header class="mdl-layout__header">
+        <div class="mdl-layout__header-row">
+          <!-- Title -->
+          <span class="mdl-layout-title">CaffeJS</span>
+          <!-- Add spacer, to align navigation to the right -->
+          <div class="mdl-layout-spacer"></div>
+        </div>
+        <a target="_new" href="https://github.com/chaosmail/caffejs"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+      </header>
+      <div class="mdl-layout__drawer">
+        <span class="mdl-layout-title">CaffeJS</span>
+        <nav class="mdl-navigation">
+          <span class="mdl-navigation__link" href="">Documentation</span>
+          <a class="mdl-navigation__link " href="index.html">Getting Started</a>
+          <a class="mdl-navigation__link " href="user-guide.html">User Guide</a>
+          <a class="mdl-navigation__link " href="development-guide.html">Development Guide</a>
+          <div class="drawer-separator"></div>
+          <span class="mdl-navigation__link" href="">Examples</span>
+          <a class="mdl-navigation__link " href="models.html">Models</a>
+          <a class="mdl-navigation__link " href="creator.html">Model Creator</a>
+          <a class="mdl-navigation__link " href="webcam.html">Webcam (GoogLeNet)</a>
+          <a class="mdl-navigation__link " href="imagenet.html">ImageNet (SqueezeNet)</a>
+          <a class="mdl-navigation__link is-active" href="deepdream.html">DeepDream (GoogLeNet)</a>
+        </nav>
+      </div>
+      <main class="mdl-layout__content">
+        <div class="page-content">
+          
+<div class="mdl-grid grid-container">
+
+  <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--12-col">
+    <div class="mdl-card__title">
+      <h2 class="mdl-card__title-text">DeepDream in the Browser</h2>
+    </div>
+    <div class="mdl-card__supporting-text">
+      <p>This page runs the famous DeepDream demo entirely in the browser using the pretrained GoogLeNet model from Caffe and CaffeJS (which is based on <a target="_new" href="http://convnetjs.com">ConvNetJS</a>). It's a JavaScript port from the <a target="_new" href="https://github.com/google/deepdream/blob/master/dream.ipynb">original DeepDream demo</a> and performs the computation using a CaffeJS model in a webworker task in your browser. This page including all models and resources is hosted as a static page on Github.</p>
+      <p>Debugging this demo: Go to the <em>Sources</em> panel in the Chrome Developer Tools and load the demo. You should see a webworker icon entitled with <em>deepdream_worker.js</em>. You can click on it and set your breakpoints as usual. Additionally, you could enable <em>DevTools for Services Workers</em> in the <em>Resources</em> panel.</p>
+      <p><em>Mordvintsev et al., Inceptionism: Going Deeper into Neural Networks, Google Research Blog, 2015</em></p>
+    </div>
+    <div class="mdl-card__actions mdl-card--border">
+      <a href="https://research.googleblog.com/2015/06/inceptionism-going-deeper-into-neural.html" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-upgraded=",MaterialButton,MaterialRipple">
+        Blogpost<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></a>
+    </div>
+  </div>
+
+  <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--12-col">
+    <div class="mdl-card__media">
+      <canvas id="image"></canvas>
+      <div id="progress" class="mdl-progress mdl-js-progress"></div>
+    </div>
+    <!-- <div class="mdl-card__supporting-text"></div> -->
+    <div class="mdl-card__actions mdl-card--border">
+      <button onclick="init()" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--raised mdl-button--accent webcam-trigger" data-upgraded=",MaterialButton,MaterialRipple">
+      Restart<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>
+      <button onclick="cancel()" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--raised mdl-button--accent webcam-trigger" data-upgraded=",MaterialButton,MaterialRipple">
+      Stop<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>
+      <select name="endLayer">
+          <option selected="selected">inception_3a/output</option>   
+          <option>inception_3b/output</option>   
+          <option>inception_4a/output</option>   
+          <option>inception_4b/output</option>   
+          <option>inception_4c/output</option>   
+          <option>inception_4d/output</option>   
+          <option>inception_4e/output</option>   
+          <option>inception_5a/output</option>   
+          <option>inception_5b/output</option> 
+      </select>
+      <input type="text" name="imageUrl" value="data/deepdream/sky.jpg">
+    </div>
+  </div>
+</div>
+
+<script>
+  // We use this canvas and image
+  var imgUrl = "data/deepdream/sky.jpg";
+  var image;
+  var canvas = document.getElementById('image');
+  var params = {iter_n:10, octave_n:4, end:'inception_3a/output'};
+  var progressBar = document.getElementById('progress');
+  // the mean value can be found in train_val.prototxt
+  var mean = [104.0, 116.0, 122.0];
+  var worker;
+
+  init();
+
+  function init() {
+
+    imgUrl = d3.select('input[name="imageUrl"]').property("value");
+
+    // Create a WebWorker with the URL to the worker code
+    console.log('Loading DeepDream in webworker');
+
+    worker = new Worker('scripts/deepdream_worker.js');
+    
+    // Messages from Web Worker
+    worker.onmessage = function(e){
+    
+      switch (e.data.name) {
+
+        case 'model-loaded':
+          console.log('Finished loading GoogLeNet');
+          load();
+          break;
+
+        case 'dream-progress':
+          console.log('Running iteration ' + e.data.iteration + ' of octave ' + e.data.octave);
+          image = ImgJS.Image.fromVol(Net.Vol.fromJSON(e.data.output), mean, [2,1,0]);
+          image.render(canvas);
+          var v = 100 * (e.data.iteration + e.data.octave*params.iter_n) / (params.octave_n*params.iter_n);
+          progressBar.MaterialProgress.setProgress(v);
+          break;
+        
+        case 'dream-finished':
+        default:
+
+          image = ImgJS.Image.fromVol(Net.Vol.fromJSON(e.data.output), mean, [2,1,0]);
+          image.render(canvas);
+          break;
+      }
+    }
+
+    // For debugging
+    worker.onerror = function(event){
+      throw new Error(event.message + " (" + event.filename + ":" + event.lineno + ")");
+    }
+  }
+
+  function load() {
+    image = new ImgJS.Image(imgUrl);
+    return image.load().then(function(){
+      image.render(canvas);
+      start();
+    });
+  }
+
+  function start() {
+    console.log(
+      'Starting DeepDream with ' + params.iter_n + ' iterations and ' + 
+        params.octave_n + ' octaves until layer ' + params.end
+    );
+
+    worker.postMessage({
+      input: image.toVol(mean, [2,1,0]).toJSON(),
+      params: params,
+      mean: mean
+    });
+  }
+
+  function cancel(){
+    console.clear();
+    console.log('Stopped WebWorker');
+    worker.terminate();
+    progressBar.MaterialProgress.setProgress(0);
+  }
+
+  d3.select('select[name="endLayer"]').on('change', function(){
+    cancel();
+    params.end = d3.select('select[name="endLayer"]').property("value");
+  });
+
+</script>
+
+
+        </div>
+      </main>
+    </div>
+
+  <!-- Material Design fonts -->
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  </body>
+</html>

@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>CaffeJS | Deep Learning in the Browser</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Material Design Light -->
+    <link rel="stylesheet" href="libs/material.min.css">
+    <script src="libs/material.min.js"></script>
+    
+    <link rel="stylesheet" href="styles/docs.css">
+
+    
+  </head>
+  <body>
+    <!-- Always shows a header, even in smaller screens. -->
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-drawer">
+      <header class="mdl-layout__header">
+        <div class="mdl-layout__header-row">
+          <!-- Title -->
+          <span class="mdl-layout-title">CaffeJS</span>
+          <!-- Add spacer, to align navigation to the right -->
+          <div class="mdl-layout-spacer"></div>
+        </div>
+        <a target="_new" href="https://github.com/chaosmail/caffejs"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+      </header>
+      <div class="mdl-layout__drawer">
+        <span class="mdl-layout-title">CaffeJS</span>
+        <nav class="mdl-navigation">
+          <span class="mdl-navigation__link" href="">Documentation</span>
+          <a class="mdl-navigation__link " href="index.html">Getting Started</a>
+          <a class="mdl-navigation__link " href="user-guide.html">User Guide</a>
+          <a class="mdl-navigation__link " href="development-guide.html">Development Guide</a>
+          <div class="drawer-separator"></div>
+          <span class="mdl-navigation__link" href="">Examples</span>
+          <a class="mdl-navigation__link " href="models.html">Models</a>
+          <a class="mdl-navigation__link " href="creator.html">Model Creator</a>
+          <a class="mdl-navigation__link " href="webcam.html">Webcam (GoogLeNet)</a>
+          <a class="mdl-navigation__link " href="imagenet.html">ImageNet (SqueezeNet)</a>
+          <a class="mdl-navigation__link " href="deepdream.html">DeepDream (GoogLeNet)</a>
+        </nav>
+      </div>
+      <main class="mdl-layout__content">
+        <div class="page-content">
+          
+<h1 id="caffejs-development-guide">CaffeJS - Development Guide</h1>
+<h2 id="getting-started">Getting Started</h2>
+<p>Checkout the project and run <code>npm install</code> in the root directory to get started. Now you can start diving into the code.</p>
+<p>You can build your code running <code>gulp</code> or using the file watcher <code>gulp watch</code>.</p>
+<h3 id="organization-of-the-code">Organization of the code</h3>
+<p>This library uses Typescript to modularize JavaScript code and use some of the cool Typescript features on top, such as classes, inheritance, fat arrow functions, etc.</p>
+<p>You can find the source code in the <code>src/</code> directory organized in 5 modules:</p>
+<ul>
+<li>Net - A fork of ConvNetJS with Caffe compatibility (considering model weights, output parameters, etc.); contains the ConvNetJS model <code>Net.Net</code>, the CaffeJS model <code>Net.CaffeModel</code>, the the Volume implementation <code>Net.Vol</code> and the layers <code>Net.Layers</code></li>
+<li>ImgJS - An image abstraction for JavaScript to avoid dealing with canvas elements and facilitate conversion to Volumes</li>
+<li>NumJS - An abstraction for operations on Arrays and Volumes</li>
+<li>Parser - A parser for converting Prototxt and Protobuf binaries into JavaScript objects</li>
+<li>Utils - An abstractions for utilities and visualizations, such as the GraphDrawer and ActivationDrawer</li>
+</ul>
+<h3 id="converting-caffemodel-files">Converting <code>*.caffemodel</code> files</h3>
+<p>You can use the script <code>scripts/convert_caffemodel.py</code> to convert <code>*.caffemodel</code> files to binary blobs which CaffeJS can load via http and parse. Unfortunately, you need to have <code>Caffe</code> and <code>pycaffe</code> installed to generate those files. You can as well download the prepared weights via running  <code>sh fetch_weights.sh</code> in the model directories.</p>
+<h2 id="deploy-the-docs">Deploy the docs</h2>
+<p>Run <code>gulp deploy</code> to build the <code>docs-pages</code> folder and deploy it to Github.</p>
+<h2 id="datasets">Datasets</h2>
+<p>To convert the dataset file <code>fall11_urls.txt</code> from <code>http://image-net.org/download-imageurls</code> to a cleaned https dataset on flickr you need to run the following command</p>
+<pre><code>cat fall11_urls.txt | grep flickr | sed &#39;s/\t/,/g&#39; | sed &#39;s/http/https/g&#39;  &gt; fall11_urls.csv
+</code></pre><p>Afterwards, the CSV file can be imported to mongodb via the command</p>
+<pre><code>mongoimport -d imagenet -c urls --fields id,url --type csv fall11_urls.csv
+</code></pre>
+        </div>
+      </main>
+    </div>
+
+  <!-- Material Design fonts -->
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  </body>
+</html>

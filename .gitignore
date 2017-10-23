@@ -1,7 +1,0 @@
-.publish/
-node_modules/
-typings/
-weights/
-data/
-docs-pages/
-*.caffemodel

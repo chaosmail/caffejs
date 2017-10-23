@@ -1,0 +1,291 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>CaffeJS | ImageNet</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Material Design Light -->
+    <link rel="stylesheet" href="libs/material.min.css">
+    <script src="libs/material.min.js"></script>
+    
+    <link rel="stylesheet" href="styles/docs.css">
+
+    
+<script src="libs/d3.min.js"></script>
+<script src="dist/caffe.js"></script>
+<script src="data/ilsvrc11/imagenet_urls.js"></script>
+
+<script src="libs/long.min.js"></script>
+<script src="libs/bytebuffer.min.js"></script>
+<script src="libs/protobuf.min.js"></script>
+
+<!-- For drawing the graph -->
+<script src="libs/lodash.min.js"></script>
+<script src="libs/graphlib.core.min.js"></script>
+<script src="libs/dagre.core.min.js"></script>
+<script src="libs/dagre-d3.core.min.js"></script>
+<link rel="stylesheet" href="styles/graph.css">
+
+<style>
+  .net-layer {
+    position: relative;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+  }
+
+  .model-container {
+    text-align: center;
+    padding: 16px;
+  }
+
+  .mdl-progress, .progressbar, .bufferbar {
+    height: 16px;
+  }
+
+  .results .label {
+    font-weight: bold;
+    padding: 8px;
+    margin-top: 12px;
+  }
+
+  .visualization-canvas canvas {
+    margin-right: 8px;
+  }
+
+  .camera, video, .model-layout svg, canvas.image, canvas.image-src {
+    width: 100% !important;
+    height: auto !important;
+  }
+</style>
+
+
+  </head>
+  <body>
+    <!-- Always shows a header, even in smaller screens. -->
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-drawer">
+      <header class="mdl-layout__header">
+        <div class="mdl-layout__header-row">
+          <!-- Title -->
+          <span class="mdl-layout-title">CaffeJS</span>
+          <!-- Add spacer, to align navigation to the right -->
+          <div class="mdl-layout-spacer"></div>
+        </div>
+        <a target="_new" href="https://github.com/chaosmail/caffejs"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+      </header>
+      <div class="mdl-layout__drawer">
+        <span class="mdl-layout-title">CaffeJS</span>
+        <nav class="mdl-navigation">
+          <span class="mdl-navigation__link" href="">Documentation</span>
+          <a class="mdl-navigation__link " href="index.html">Getting Started</a>
+          <a class="mdl-navigation__link " href="user-guide.html">User Guide</a>
+          <a class="mdl-navigation__link " href="development-guide.html">Development Guide</a>
+          <div class="drawer-separator"></div>
+          <span class="mdl-navigation__link" href="">Examples</span>
+          <a class="mdl-navigation__link " href="models.html">Models</a>
+          <a class="mdl-navigation__link " href="creator.html">Model Creator</a>
+          <a class="mdl-navigation__link " href="webcam.html">Webcam (GoogLeNet)</a>
+          <a class="mdl-navigation__link is-active" href="imagenet.html">ImageNet (SqueezeNet)</a>
+          <a class="mdl-navigation__link " href="deepdream.html">DeepDream (GoogLeNet)</a>
+        </nav>
+      </div>
+      <main class="mdl-layout__content">
+        <div class="page-content">
+          
+<div class="mdl-grid grid-container">
+
+  <div class="mdl-cell mdl-cell--12-col mdl-grid">
+    
+    <!-- Webcam Input -->
+    <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--5-col">
+      <div class="mdl-card__media">
+        <canvas class="image-src"></canvas>
+      </div>
+      <div class="mdl-card__title">
+        <h2 class="mdl-card__title-text">ImageNet Classification</h2>
+      </div>
+      <div class="mdl-card__supporting-text">
+        Feed a picture from ImageNet into the deep neural network running entirely in your browser.
+      </div>
+      <div class="mdl-card__actions mdl-card--border">
+        <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--raised" data-upgraded=",MaterialButton,MaterialRipple" onclick="nextImage()">
+        Next<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>
+        <button disabled class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--raised mdl-button--accent imagenet-trigger" data-upgraded=",MaterialButton,MaterialRipple" onclick="classify()">
+        Classify<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>
+      </div>
+    </div>
+  
+    <!-- Model Overview -->
+    <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--7-col">
+      <div class="mdl-card__media">
+        <div class="model-container">
+          <div class="model-layout"></div>
+          <div class="mdl-spinner mdl-js-spinner is-active model-loading"></div>
+        </div>
+      </div>
+      <div class="mdl-card__title">
+        <h2 class="mdl-card__title-text">SqueezeNet</h2>
+      </div>
+      <div class="mdl-card__supporting-text">
+        Using <a href="https://github.com/DeepScale/SqueezeNet" target="_new">SqueezeNet</a> (5 MB) trained on ImageNet.
+        <br><em>Iandola et al., SqueezeNet: AlexNet-level accuracy with 50x fewer parameters and &lt;0.5MB model size, CoRR, 2016</em>
+      </div>
+      <div class="mdl-card__actions mdl-card--border">
+        <a href="https://arxiv.org/pdf/1409.4842v1.pdf" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-upgraded=",MaterialButton,MaterialRipple">
+        Paper<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></a>
+        <a href="models.html#squeezenet" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-upgraded=",MaterialButton,MaterialRipple">
+        Model Structure<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="mdl-cell mdl-cell--12-col mdl-grid results" style="display: none;">
+    
+    <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--5-col">
+      <div class="mdl-card__media">
+        <canvas class="image"></canvas>
+      </div>
+    </div>
+
+    <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--7-col">
+      <div class="label" id="label-0"></div>
+      <div id="class-0" class="mdl-progress mdl-js-progress"></div>
+      <div class="label" id="label-1"></div>
+      <div id="class-1" class="mdl-progress mdl-js-progress"></div>
+      <div class="label" id="label-2"></div>
+      <div id="class-2" class="mdl-progress mdl-js-progress"></div>
+      <div class="label" id="label-3"></div>
+      <div id="class-3" class="mdl-progress mdl-js-progress"></div>
+      <div class="label" id="label-4"></div>
+      <div id="class-4" class="mdl-progress mdl-js-progress"></div>
+    </div>
+
+  </div>
+
+  <div class="mdl-cell mdl-cell--12-col mdl-grid visualization" style="display: none;">
+    
+    <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--12-col visualization-canvas">
+      
+    </div>
+  
+  </div>
+</div>
+
+<div class="model"></div>
+
+<script language="JavaScript">
+  var nj = NumJS;
+  
+  var image;
+  var target;
+  var $imgSrc = document.getElementsByClassName("image-src")[0];
+
+  // Image dimensions
+  var width = 227;
+  var height = 227;
+  
+  // Compare top-n labels
+  var n = 5;
+  var format = d3.format('.2%');
+
+  var labels;
+  var classes;
+  d3.text('data/ilsvrc12/synset_words.txt', function(data){
+    classes = data.split('\n').map(function(d){
+      return d.split(/\s+/)[0];
+    });
+    labels = data.split('\n').map(function(d){
+      return d.substr(10);
+    });
+  });
+
+  // the mean value can be found in train_val.prototxt
+  var mean = [104.0, 116.0, 122.0];
+
+  loadModel();
+  nextImage();
+
+  function nextImage() {
+    var randImg = imagenet_urls[Math.floor(Math.random() * imagenet_urls.length)];
+
+    console.log('Loading image ' + randImg.label + ': ' + randImg.url);
+    image = new ImgJS.Image(randImg.url);
+    target = randImg.label.split("_")[0];
+    image.load().then(function(){
+      image.render($imgSrc);
+    });
+  }
+
+  function setResult(i, score, label, claz){
+    var p = document.getElementById('class-' + i);
+    p.MaterialProgress.setProgress(score);
+
+    var l = document.getElementById('label-' + i);
+    l.textContent = label;
+
+    // // Synset 2011 Fall required
+    // if (target == claz) {
+    //   l.style.color = "green";
+    // }
+    // else {
+    //   console.log(claz, target);
+    //   l.style.color = "red";
+    // }
+  }
+
+  function classify(input) {
+    var input = image.toVol(mean, [2,1,0])
+      .zoom(width/image.image.width, height/image.image.height);
+
+    var vis = ImgJS.Image.fromVol(input, mean, [2,1,0]);
+    vis.render(document.getElementsByClassName("image")[0]);
+ 
+    var scores = model.forward(input);
+    var topInd = nj.argmaxn(scores.w, n);
+    var topVal = nj.maxn(scores.w, n);
+
+    d3.selectAll('.results').style('display', 'flex');
+    for (var i=0;i<n;i++) {
+      setResult(i, topVal[i] * 100, labels[topInd[i]], classes[topInd[i]]);
+    }
+
+    visualize();
+  }
+
+  function visualize() {
+    d3.selectAll('.visualization').style('display', 'flex');
+    Utils.ActivationDrawer.fromNet(model).render('.visualization-canvas', false, 24, 36, 36);
+  }
+
+  function loadModel() {
+
+    model = new Net.CaffeModel(
+      'models/squeezenet/deploy.prototxt',
+      'models/squeezenet/weights/'
+    );
+
+    model.load().then(function(){
+      d3.selectAll('.model-loading').style('display', 'none');
+
+      d3.selectAll('.imagenet-trigger').attr('disabled', null);
+      d3.selectAll('.model-layout').style('display', 'block');
+      d3.selectAll('.model-name').style('display', 'block');
+      d3.selectAll('.model-link').style('display', 'block');
+
+      var dag = Utils.GraphDrawer.fromNet(model);
+        dag.render('.model-layout', 2*width, height).fit().rotate();
+    });
+  }
+
+</script>
+
+        </div>
+      </main>
+    </div>
+
+  <!-- Material Design fonts -->
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  </body>
+</html>
