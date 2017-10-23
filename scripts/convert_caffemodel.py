@@ -11,9 +11,9 @@ sys.path.insert(0, caffe_root + 'python')
 
 import caffe
 
-dir_  = "caffenet"
-proto = "simple_net_deploy.prototxt"
-model = "simple_train_final.caffemodel"
+dir_  = "squeezenet"
+proto = "deploy.prototxt"
+model = "squeezenet.caffemodel"
 
 # Set the right path to your model definition file, pretrained model weights,
 # and the image you would like to classify.

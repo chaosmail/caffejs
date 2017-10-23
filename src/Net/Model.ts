@@ -167,8 +167,8 @@ namespace Net {
 
     debugStructure(){
       var numParams = 0;
-      var f = d3.format('s')
-      var f2 = d3.format(',d')
+      var f = d3.format('s');
+      var f2 = d3.format(',d');
       var numLayers = 0;
 
       this.layerIterator((layer, i, pred) => {

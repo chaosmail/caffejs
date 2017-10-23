@@ -5,10 +5,6 @@
     <title>CaffeJS | {% block title %}Deep Learning in the Browser{% endblock %}</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- Material Design fonts -->
-    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700">
-    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/icon?family=Material+Icons">
 
     <!-- Material Design Light -->
     <link rel="stylesheet" href="libs/material.min.css">
@@ -42,17 +38,19 @@
           <a class="mdl-navigation__link {% if navmodels %}is-active{% endif %}" href="models.html">Models</a>
           <a class="mdl-navigation__link {% if navcreator %}is-active{% endif %}" href="creator.html">Model Creator</a>
           <a class="mdl-navigation__link {% if navwebcam %}is-active{% endif %}" href="webcam.html">Webcam (GoogLeNet)</a>
-          <a class="mdl-navigation__link {% if navimagenet %}is-active{% endif %}" href="imagenet.html">ImageNet Classification (Alexnet)</a>
+          <a class="mdl-navigation__link {% if navimagenet %}is-active{% endif %}" href="imagenet.html">ImageNet (SqueezeNet)</a>
           <a class="mdl-navigation__link {% if navdream %}is-active{% endif %}" href="deepdream.html">DeepDream (GoogLeNet)</a>
         </nav>
       </div>
       <main class="mdl-layout__content">
         <div class="page-content">
-          {% block content %}
-          
-        {% endblock %}
+          {% block content %}{% endblock %}
         </div>
       </main>
     </div>
+
+  <!-- Material Design fonts -->
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700">
+  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/icon?family=Material+Icons">
   </body>
 </html>

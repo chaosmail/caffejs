@@ -10,11 +10,16 @@ g.layer-lrn > rect {
   fill: #0f9d58;
 }
 
+g.layer-inception > rect, g.layer-fire > rect {
+  fill: #129d5a;
+}
+
 g.layer-concat > rect {
   fill: #129d5a;
 }
 
-g.layer-softmax > rect {
+
+g.layer-input > rect, g.layer-softmax > rect {
   fill: #f4b400;
 }
 
@@ -27,19 +32,24 @@ text {
 }
 
 .node rect {
-  stroke: #000;
   fill: #ddd;
   stroke: none;
 }
 
-.edgePath path {
+.edgePath path, .edgePath marker {
   stroke: #333;
   stroke-width: 1.5px;
 }
 
+.edgePath marker {
+  fill: #fff;
+}
+
 .label text {
+  padding-left:0.75em;
   font-size: 12px;
-  fill: #666;
+  font-family: monospace;
+  fill: #333;
 }
 
 svg div {

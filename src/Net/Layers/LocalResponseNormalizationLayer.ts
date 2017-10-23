@@ -107,7 +107,7 @@ namespace Net.Layers {
 
     getDescription() {
       return super.getDescription().concat([
-        'n ' + this.n + ', ' + 'k ' + this.k,
+        'n=' + this.n + ' ' + 'k=' + this.k,
       ]);
     }
 

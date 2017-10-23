@@ -973,7 +973,7 @@ var Net;
             };
             ConvLayer.prototype.getDescription = function () {
                 return _super.prototype.getDescription.call(this).concat([
-                    [this.out_depth, this.sy, this.sx].join('x') + ' Stride ' + this.stride + ' Pad ' + this.pad
+                    [this.out_depth, this.sy, this.sx].join('x') + ' stride=' + this.stride + ' pad=' + this.pad
                 ]);
             };
             ConvLayer.prototype.toJSON = function () {
@@ -1335,7 +1335,7 @@ var Net;
             };
             LocalResponseNormalizationLayer.prototype.getDescription = function () {
                 return _super.prototype.getDescription.call(this).concat([
-                    'n ' + this.n + ', ' + 'k ' + this.k,
+                    'n=' + this.n + ' ' + 'k=' + this.k,
                 ]);
             };
             LocalResponseNormalizationLayer.prototype.toJSON = function () {
@@ -1489,12 +1489,19 @@ var Net;
                 _this.layer_type = 'pool';
                 // required
                 _this.out_depth = opt.filters;
-                // filter size. Should be odd if possible, it's cleaner.
-                _this.sx = opt.sx;
                 _this.pool = Net.getopt(opt, ['pool'], 'MAX');
                 ;
-                // optional
-                _this.sy = Net.getopt(opt, ['sy'], _this.sx);
+                if (Net.getopt(opt, ['global_pooling'], false)) {
+                    // Get the dimensions of the previous layer
+                    _this.sx = opt.pred[0].out_sx;
+                    _this.sy = opt.pred[0].out_sy;
+                }
+                else {
+                    // filter size. Should be odd if possible, it's cleaner.
+                    _this.sx = opt.sx;
+                    // optional
+                    _this.sy = Net.getopt(opt, ['sy'], _this.sx);
+                }
                 // stride at which we apply filters to input volume
                 _this.stride = Net.getopt(opt, ['stride'], 1);
                 // amount of 0 padding to add around borders of input volume
@@ -1622,7 +1629,7 @@ var Net;
                 return [
                     this.pool + " " + this.layer_type.toUpperCase(),
                     this.name,
-                    [this.sy, this.sx].join('x') + ' Stride ' + this.stride + ' Pad ' + this.pad
+                    [this.sy, this.sx].join('x') + ' stride=' + this.stride + ' pad=' + this.pad
                 ];
             };
             PoolLayer.prototype.toJSON = function () {
@@ -6170,6 +6177,7 @@ var Net;
                     opt.sx = pp.kernel_size !== undefined ? +pp.kernel_size : undefined;
                     opt.pad = pp.pad !== undefined ? +pp.pad : undefined;
                     opt.stride = pp.stride !== undefined ? +pp.stride : undefined;
+                    opt.global_pooling = pp.global_pooling !== undefined && pp.global_pooling !== 'false' ? true : false;
                     layer = new Net.Layers.PoolLayer(opt);
                     break;
                 case 'inner_product':
@@ -6218,6 +6226,8 @@ var Net;
         CaffeModel.prototype.createEdges = function () {
             var _this = this;
             this.edges = [];
+            var edgeSet = d3.set();
+            var getEdgeId = function (a, b) { return a + ":#:" + b; };
             this.layers.values()
                 .filter(function (d) { return d.input !== undefined && d.input !== d.output; })
                 .forEach(function (d) {
@@ -6226,7 +6236,10 @@ var Net;
                 }
                 else {
                     d.input.forEach(function (layerName) {
-                        _this.edges.push({ from: layerName, to: d.output });
+                        if (!edgeSet.has(getEdgeId(layerName, d.output))) {
+                            _this.edges.push({ from: layerName, to: d.output });
+                            edgeSet.add(getEdgeId(layerName, d.output));
+                        }
                     });
                 }
             });
@@ -6241,7 +6254,10 @@ var Net;
                     .filter(function (edge) { return edge.from === d.input; })
                     .forEach(function (edge) {
                     edge.from = d.name;
-                    _this.edges.push({ from: d.input, to: d.name });
+                    if (!edgeSet.has(getEdgeId(d.input, d.name))) {
+                        _this.edges.push({ from: d.input, to: d.name });
+                        edgeSet.add(getEdgeId(d.input, d.name));
+                    }
                 });
             });
         };
@@ -6483,13 +6499,16 @@ var Utils;
 (function (Utils) {
     var GraphDrawer = /** @class */ (function (_super) {
         __extends(GraphDrawer, _super);
-        function GraphDrawer() {
-            return _super.call(this) || this;
+        function GraphDrawer(compact) {
+            if (compact === void 0) { compact = false; }
+            var _this = _super.call(this) || this;
+            _this.compact = compact;
+            return _this;
         }
         GraphDrawer.prototype.render = function (element, width, height) {
             // Create the renderer
             var render = new dagreD3.render();
-            this.graph = this.createGraph();
+            this.graph = this.compact ? this.createCompactGraph() : this.createGraph();
             // Clean
             this.$elem = d3.select(element);
             this.$elem.selectAll('*').remove();
@@ -6501,7 +6520,9 @@ var Utils;
             this.height = height || this.graph.graph().height;
             // Center the graph
             var xOffset = (this.width - this.graph.graph().width) / 2;
-            this.$g.attr("transform", "translate(" + xOffset + ")");
+            if (xOffset) {
+                this.$g.attr("transform", "translate(" + xOffset + ")");
+            }
             this.$svg.attr('width', this.width);
             this.$svg.attr('height', this.height);
             return this;
@@ -6518,8 +6539,97 @@ var Utils;
             this.$svg.attr("viewBox", "0 0 " + this.graph.graph().height + " " + this.graph.graph().width);
             return this;
         };
+        GraphDrawer.prototype.getHeightScaleTemplate = function (exp) {
+            if (exp === void 0) { exp = 0.25; }
+            return d3.scale.pow().exponent(exp).range([GraphDrawer.MIN_LAYER_HEIGHT, GraphDrawer.MAX_LAYER_HEIGHT]).clamp(true);
+        };
+        GraphDrawer.prototype.getWidthScaleTemplate = function (exp) {
+            if (exp === void 0) { exp = 0.75; }
+            return d3.scale.pow().exponent(exp).range([GraphDrawer.MIN_LAYER_WIDTH, GraphDrawer.MAX_LAYER_WIDTH]).clamp(true);
+        };
+        GraphDrawer.prototype.getWidthScale = function () {
+            var extWidth = d3.extent(this.layers.values(), function (d) { return d.getOutputShape()[1]; });
+            var extHeight = d3.extent(this.layers.values(), function (d) { return d.getOutputShape()[2]; });
+            var widthScale = this.getWidthScaleTemplate().domain([
+                Math.min(extWidth[0], extHeight[0]),
+                Math.max(extWidth[1], extHeight[1])
+            ]);
+            return function (layer) {
+                var layerSize = Math.max(layer.getOutputShape()[1], layer.getOutputShape()[2]);
+                return widthScale(layerSize);
+            };
+        };
+        GraphDrawer.prototype.getHeightScale = function () {
+            var extDepth = d3.extent(this.layers.values(), function (d) { return d.getOutputShape()[0]; });
+            var heightScale = this.getHeightScaleTemplate().domain([
+                extDepth[0], extDepth[1]
+            ]);
+            return function (layer) {
+                var layerDepth = layer.getOutputShape()[0];
+                return heightScale(layerDepth);
+            };
+        };
+        GraphDrawer.prototype.createCompactGraph = function () {
+            var g = new dagreD3.graphlib.Graph()
+                .setGraph({})
+                .setDefaultEdgeLabel(function () { return ''; });
+            var getWidth = this.getWidthScale();
+            var getHeight = this.getHeightScale();
+            var take = function (desc, k) { return desc.splice(k, 1); };
+            var skip = function (desc, k) { return desc.filter(function (d, i) { return i !== k; }); };
+            var after = function (d, f) { return d != "" ? d + f : d; };
+            var before = function (d, f) { return d != "" ? f + d : d; };
+            var emph = function (d) { return "<strong>" + d + "</strong>"; };
+            var paramsFormat = d3.format('s');
+            var getNumParams = function (layerGroup) {
+                var numParams = d3.sum(layerGroup.values, function (d) { return d3.sum(d.getNumParameters()); });
+                return numParams ? after(paramsFormat(numParams), " parameters") : "";
+            };
+            var getCompactLabel = function (layerGroup) {
+                if (layerGroup.values.length === 1) {
+                    return layerGroup.values.map(function (d) { return emph(d.getDescription()[0]); })[0];
+                }
+                else if (layerGroup.values.length <= 5) {
+                    return layerGroup.values.map(function (d) { return emph(d.getDescription()[0]); }).join(" + ");
+                }
+                return emph(layerGroup.key.split(GraphDrawer.LAYER_NAME_SEP)[0].toUpperCase());
+            };
+            var getCompactClass = function (layerGroup) {
+                if (layerGroup.values.length === 1) {
+                    return layerGroup.values[0].layer_type;
+                }
+                else if (layerGroup.values.length <= 5) {
+                    return layerGroup.values[0].layer_type;
+                }
+                return layerGroup.key.split(GraphDrawer.LAYER_NAME_SEP)[0].replace(/\d/g, '');
+            };
+            var layers = d3.nest()
+                .key(function (d) { return d.name.split(GraphDrawer.LAYER_GROUP_SEP)[0]; })
+                .entries(this.layers.values());
+            layers.forEach(function (layer, i) {
+                var lastLayer = layer.values[layer.values.length - 1];
+                g.setNode(layer.key, {
+                    labelType: "html",
+                    label: getCompactLabel(layer) + before(getNumParams(layer), "<br>"),
+                    class: "layer layer-" + getCompactClass(layer),
+                    width: getWidth(lastLayer),
+                    height: getHeight(lastLayer)
+                });
+                if (i > 0) {
+                    var prev = layers[i - 1];
+                    var prevLayer = prev.values[prev.values.length - 1];
+                    g.setEdge(prev.key, layer.key, {
+                        label: prevLayer.getOutputShape().join('x'),
+                        class: "edge"
+                    });
+                }
+            });
+            return GraphDrawer.addRoundCorners(g);
+        };
         GraphDrawer.prototype.createGraph = function () {
             var _this = this;
+            var emph = function (arr, j) { return arr.map(function (d, i) { return i === j ? "<strong>" + d + "</strong>" : d; }); };
+            var getWidth = this.getWidthScale();
             // Create the input graph
             var g = new dagreD3.graphlib.Graph()
                 .setGraph({})
@@ -6528,30 +6638,43 @@ var Utils;
                 // var numParamsPerLayer = nj.sum(layer.getNumParameters());
                 g.setNode(layer.name, {
                     labelType: "html",
-                    label: layer.getDescription().join('<br>'),
-                    class: "layer-" + layer.layer_type
+                    label: emph(layer.getDescription(), 0).join('<br>'),
+                    class: "layer layer-" + layer.layer_type,
+                    width: getWidth(layer)
                 });
-            });
-            g.nodes().forEach(function (v) {
-                var node = g.node(v);
-                // Round the corners of the nodes
-                node.rx = node.ry = 5;
             });
             this.edges
                 .filter(function (edge) { return edge.from !== undefined && edge.to !== undefined; })
                 .forEach(function (edge) {
                 g.setEdge(edge.from, edge.to, {
-                    label: _this.layers.get(edge.from).getOutputShape().join('x')
+                    label: _this.layers.get(edge.from).getOutputShape().join('x'),
+                    class: "edge"
                 });
             });
-            return g;
+            return GraphDrawer.addRoundCorners(g);
         };
-        GraphDrawer.fromNet = function (model) {
-            var g = new GraphDrawer;
+        GraphDrawer.addRoundCorners = function (graph) {
+            graph.nodes().forEach(function (v) {
+                var node = graph.node(v);
+                // Round the corners of the nodes
+                node.rx = node.ry = GraphDrawer.NODE_RADIUS;
+            });
+            return graph;
+        };
+        GraphDrawer.fromNet = function (model, compact) {
+            if (compact === void 0) { compact = false; }
+            var g = new GraphDrawer(compact);
             g.layers = model.layers;
             g.edges = model.edges;
             return g;
         };
+        GraphDrawer.MIN_LAYER_HEIGHT = 16;
+        GraphDrawer.MAX_LAYER_HEIGHT = 48;
+        GraphDrawer.MIN_LAYER_WIDTH = 128;
+        GraphDrawer.MAX_LAYER_WIDTH = 512;
+        GraphDrawer.NODE_RADIUS = 4;
+        GraphDrawer.LAYER_GROUP_SEP = '/';
+        GraphDrawer.LAYER_NAME_SEP = '_';
         return GraphDrawer;
     }(Net.Model));
     Utils.GraphDrawer = GraphDrawer;

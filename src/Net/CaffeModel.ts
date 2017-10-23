@@ -113,6 +113,7 @@ namespace Net {
           opt.sx = pp.kernel_size !== undefined ? +pp.kernel_size : undefined;
           opt.pad = pp.pad !== undefined ? +pp.pad : undefined;
           opt.stride = pp.stride !== undefined ? +pp.stride : undefined;
+          opt.global_pooling = pp.global_pooling !== undefined &&  pp.global_pooling !== 'false' ? true : false;
           layer = new Layers.PoolLayer(opt);
           break;
 
@@ -160,6 +161,9 @@ namespace Net {
     createEdges() {
       this.edges = [];
 
+      let edgeSet = d3.set();
+      let getEdgeId = (a, b) => a + ":#:" + b;
+
       this.layers.values()
         .filter((d: any) => d.input !== undefined && d.input !== d.output)
         .forEach((d: any) => {
@@ -168,7 +172,10 @@ namespace Net {
           }
           else {
             d.input.forEach((layerName: string) => {
-              this.edges.push({ from: layerName, to: d.output });
+              if (!edgeSet.has(getEdgeId(layerName, d.output))) {
+                this.edges.push({ from: layerName, to: d.output });
+                edgeSet.add(getEdgeId(layerName, d.output));
+              }
             });
           }
         });
@@ -184,7 +191,10 @@ namespace Net {
             .filter((edge: IEdge) => edge.from === d.input)
             .forEach((edge: IEdge) => {
               edge.from = d.name;
-              this.edges.push({ from: d.input, to: d.name });
+              if (!edgeSet.has(getEdgeId(d.input,  d.name))) {
+                this.edges.push({ from: d.input, to: d.name });
+                edgeSet.add(getEdgeId(d.input, d.name));
+              }
             })
         });
     }

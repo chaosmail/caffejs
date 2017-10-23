@@ -29,13 +29,22 @@ namespace Net.Layers {
       // required
       this.out_depth = opt.filters;
 
-      // filter size. Should be odd if possible, it's cleaner.
-      this.sx = opt.sx;
-
       this.pool = getopt(opt, ['pool'], 'MAX');;
 
-      // optional
-      this.sy = getopt(opt, ['sy'], this.sx);
+      if (getopt(opt, ['global_pooling'], false)) {
+        
+        // Get the dimensions of the previous layer
+        this.sx = opt.pred[0].out_sx;
+        this.sy = opt.pred[0].out_sy;
+      }
+      else {
+        
+        // filter size. Should be odd if possible, it's cleaner.
+        this.sx = opt.sx;
+
+        // optional
+        this.sy = getopt(opt, ['sy'], this.sx);
+      }
 
       // stride at which we apply filters to input volume
       this.stride = getopt(opt, ['stride'], 1);
@@ -171,7 +180,7 @@ namespace Net.Layers {
       return [
         this.pool + " " + this.layer_type.toUpperCase(), 
         this.name,
-        [this.sy, this.sx].join('x') + ' Stride ' + this.stride + ' Pad ' + this.pad
+        [this.sy, this.sx].join('x') + ' stride=' + this.stride + ' pad=' + this.pad
       ];
     }
 

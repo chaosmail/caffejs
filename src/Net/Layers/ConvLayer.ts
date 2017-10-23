@@ -206,7 +206,7 @@ namespace Net.Layers {
 
     getDescription() {
       return super.getDescription().concat([
-        [this.out_depth, this.sy, this.sx].join('x') + ' Stride ' + this.stride + ' Pad ' + this.pad
+        [this.out_depth, this.sy, this.sx].join('x') + ' stride=' + this.stride + ' pad=' + this.pad
       ]);
     }
 

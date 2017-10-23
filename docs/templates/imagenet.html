@@ -1,11 +1,12 @@
 {% set navimagenet = true %}
 {% extends "base.html" %}
 
-{% block title %}ImageNet Classification{% endblock %}
+{% block title %}ImageNet{% endblock %}
 
 {% block header %}
 <script src="libs/d3.min.js"></script>
 <script src="dist/caffe.js"></script>
+<script src="data/ilsvrc11/imagenet_urls.js"></script>
 
 <script src="libs/long.min.js"></script>
 <script src="libs/bytebuffer.min.js"></script>
@@ -44,7 +45,7 @@
     margin-right: 8px;
   }
 
-  .camera, video, .model-layout svg, canvas.image {
+  .camera, video, .model-layout svg, canvas.image, canvas.image-src {
     width: 100% !important;
     height: auto !important;
   }
@@ -58,7 +59,7 @@
   <div class="mdl-cell mdl-cell--12-col mdl-grid">
     
     <!-- Webcam Input -->
-    <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--12-col">
+    <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--5-col">
       <div class="mdl-card__media">
         <canvas class="image-src"></canvas>
       </div>
@@ -68,10 +69,6 @@
       <div class="mdl-card__supporting-text">
         Feed a picture from ImageNet into the deep neural network running entirely in your browser.
       </div>
-      <div class="model-container">
-        <div class="model-layout"></div>
-        <div class="mdl-spinner mdl-js-spinner is-active model-loading"></div>
-      </div>
       <div class="mdl-card__actions mdl-card--border">
         <button class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--raised" data-upgraded=",MaterialButton,MaterialRipple" onclick="nextImage()">
         Next<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>
@@ -79,8 +76,31 @@
         Classify<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>
       </div>
     </div>
-  </div>
   
+    <!-- Model Overview -->
+    <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--7-col">
+      <div class="mdl-card__media">
+        <div class="model-container">
+          <div class="model-layout"></div>
+          <div class="mdl-spinner mdl-js-spinner is-active model-loading"></div>
+        </div>
+      </div>
+      <div class="mdl-card__title">
+        <h2 class="mdl-card__title-text">SqueezeNet</h2>
+      </div>
+      <div class="mdl-card__supporting-text">
+        Using <a href="https://github.com/DeepScale/SqueezeNet" target="_new">SqueezeNet</a> (5 MB) trained on ImageNet.
+        <br><em>Iandola et al., SqueezeNet: AlexNet-level accuracy with 50x fewer parameters and &lt;0.5MB model size, CoRR, 2016</em>
+      </div>
+      <div class="mdl-card__actions mdl-card--border">
+        <a href="https://arxiv.org/pdf/1409.4842v1.pdf" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-upgraded=",MaterialButton,MaterialRipple">
+        Paper<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></a>
+        <a href="models.html#squeezenet" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-upgraded=",MaterialButton,MaterialRipple">
+        Model Structure<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></a>
+      </div>
+    </div>
+  </div>
+
   <div class="mdl-cell mdl-cell--12-col mdl-grid results" style="display: none;">
     
     <div class="mdl-card mdl-shadow--2dp mdl-cell mdl-cell--5-col">
@@ -119,6 +139,7 @@
   var nj = NumJS;
   
   var image;
+  var target;
   var $imgSrc = document.getElementsByClassName("image-src")[0];
 
   // Image dimensions
@@ -130,58 +151,53 @@
   var format = d3.format('.2%');
 
   var labels;
-  d3.text('models/caffenet/caffe_label_file.txt', function(data){
+  var classes;
+  d3.text('data/ilsvrc12/synset_words.txt', function(data){
+    classes = data.split('\n').map(function(d){
+      return d.split(/\s+/)[0];
+    });
     labels = data.split('\n').map(function(d){
-      return d.split(" ")[1];
+      return d.substr(10);
     });
   });
 
-  var mean;
-  var p = new Parser.BlobProtoParser();
-  p.parse('models/caffenet/mean.binaryproto').then(function(data){
-    mean = data;
+  // the mean value can be found in train_val.prototxt
+  var mean = [104.0, 116.0, 122.0];
 
-    console.log('Mean', mean)
+  loadModel();
+  nextImage();
 
-    loadModel();
-    initialImage();
-  });
+  function nextImage() {
+    var randImg = imagenet_urls[Math.floor(Math.random() * imagenet_urls.length)];
 
-  function initialImage() {
-    // Add a timestamp to prevent caching
-    var imgUrl = 'models/caffenet/hongbao.jpg';
-    image = new ImgJS.Image(imgUrl);
+    console.log('Loading image ' + randImg.label + ': ' + randImg.url);
+    image = new ImgJS.Image(randImg.url);
+    target = randImg.label.split("_")[0];
     image.load().then(function(){
       image.render($imgSrc);
     });
   }
 
-  function nextImage() {
-    // Add a timestamp to prevent caching
-    var apiUrl = 'https://dataset.at/imagenet/sample/' + '?' + new Date().getTime();
-    var req = new Request(apiUrl);
-    fetch(req).then(function(response){
-      response.json().then(function(d){
-        console.log('Loading image ' + d.data.url);
-        image = new ImgJS.Image(d.data.url);
-        image.load().then(function(){
-          image.render($imgSrc);
-        });
-      });
-    });
-  }
-
-  function setResult(i, score, label){
+  function setResult(i, score, label, claz){
     var p = document.getElementById('class-' + i);
     p.MaterialProgress.setProgress(score);
 
     var l = document.getElementById('label-' + i);
     l.textContent = label;
+
+    // // Synset 2011 Fall required
+    // if (target == claz) {
+    //   l.style.color = "green";
+    // }
+    // else {
+    //   console.log(claz, target);
+    //   l.style.color = "red";
+    // }
   }
 
   function classify(input) {
     var input = image.toVol(mean, [2,1,0])
-      .zoom(227/image.image.width, 227/image.image.height);
+      .zoom(width/image.image.width, height/image.image.height);
 
     var vis = ImgJS.Image.fromVol(input, mean, [2,1,0]);
     vis.render(document.getElementsByClassName("image")[0]);
@@ -192,7 +208,7 @@
 
     d3.selectAll('.results').style('display', 'flex');
     for (var i=0;i<n;i++) {
-      setResult(i, topVal[i] * 100, labels[topInd[i]]);
+      setResult(i, topVal[i] * 100, labels[topInd[i]], classes[topInd[i]]);
     }
 
     visualize();
@@ -206,8 +222,8 @@
   function loadModel() {
 
     model = new Net.CaffeModel(
-      'models/caffenet/simple_net_deploy.prototxt',
-      'models/caffenet/weights/'
+      'models/squeezenet/deploy.prototxt',
+      'models/squeezenet/weights/'
     );
 
     model.load().then(function(){
