@@ -104,7 +104,7 @@ gulp.task('watch', ['scripts',], () => {
 
 gulp.task('deploy', ['docs'], () => {
   return gulp.src(cfg.docs.buildDir + '**/*')
-    .pipe(ghPages());
+    .pipe(ghPages({force: true}));
 });
 
 // The default task (called when you run `gulp` from cli)

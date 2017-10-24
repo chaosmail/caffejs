@@ -1,0 +1,142 @@
+{% set navcreator = true %}
+{% extends "base.html" %}
+
+{% block title %}Deep Learning Model Creator{% endblock %}
+
+{% block header %}
+<script src="libs/d3.min.js"></script>
+<script src="dist/caffe.js"></script>
+
+<!-- For drawing the graph -->
+<script src="libs/lodash.min.js"></script>
+<script src="libs/graphlib.core.min.js"></script>
+<script src="libs/dagre.core.min.js"></script>
+<script src="libs/dagre-d3.core.min.js"></script>
+<script src="libs/svg-pan-zoom.min.js"></script>
+<link rel="stylesheet" href="styles/graph.css">
+
+<style>
+  .page-content {
+    height: 100%;
+    position: relative;
+    max-width: none;
+  }
+
+  #model-def {
+    min-height: 24rem;
+    width: 100%;
+    height: 100% !important;
+  }
+</style>
+
+{% endblock %}
+
+{% block content %}
+<div class="mdl-grid grid-container">
+  <div class="mdl-cell mdl-cell--6-col">
+    <p>Paste some Caffe mode definition here. Press `shift` + `enter` to update model</p>
+  </div>
+  <div class="mdl-cell mdl-cell--3-col">
+  
+    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-compact">
+      <input type="checkbox" id="switch-compact" class="mdl-switch__input" checked>
+      <span class="mdl-switch__label">Compact</span>
+    </label>
+  </div>
+  <div class="mdl-cell mdl-cell--3-col">
+    <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-zoom">
+      <input type="checkbox" id="switch-zoom" class="mdl-switch__input">
+      <span class="mdl-switch__label">Zoom</span>
+    </label>
+  </div>
+  <div class="mdl-cell mdl-cell--6-col">
+    <textarea id="model-def"></textarea>
+  </div>
+  <div class="mdl-cell mdl-cell--6-col">
+    <div class="model"></div>
+  </div>
+</div>
+
+<script language="JavaScript">
+
+var modelDef = d3.select("#model-def");
+
+modelDef.on("keydown", function() {
+  var e = d3.event;
+  if (e.key == "Enter" && e.shiftKey == true) {
+    console.clear();
+    reloadModel(modelDef.node().value);
+    d3.event.stopPropagation();
+    d3.event.preventDefault();
+  }
+});
+
+d3.select('#switch-zoom').on('change', function(){
+  updateZoom();
+});
+
+function reloadModel(def) {
+  var comapct = d3.select('#switch-compact').property("checked");
+
+  // Let's create a new model from the definition
+  var model = new Net.CaffeModel().fromText(def);
+  
+  // Debug the structure
+  model.debugStructure();
+
+  // Render the Graph structure
+  var dag = Utils.GraphDrawer.fromNet(model, comapct);
+  dag.render('.model', '100%');
+
+  initZoom();
+}
+
+var panZoomInstance;
+
+var initZoom = function() {
+  panZoomInstance = svgPanZoom('.model > svg', {
+    zoomEnabled: false,
+    controlIconsEnabled: false,
+    dblClickZoomEnabled: false,
+    fit: false,
+    center: false,
+    minZoom: 0.001
+  });
+
+  updateZoom();
+}
+
+var updateZoom = function() {
+  var zoom =  d3.select('#switch-zoom').property("checked");
+
+  if (panZoomInstance) {
+    if (zoom) {
+      panZoomInstance.enableControlIcons();
+      panZoomInstance.enablePan();
+      panZoomInstance.enableZoom();
+      moveZoomControlsToTop();
+    }
+    else {
+      panZoomInstance.disableControlIcons();
+      panZoomInstance.disablePan();
+      panZoomInstance.disableZoom();
+    }
+  }
+}
+
+d3.select('#switch-compact').on('change', function(){
+  console.clear();
+  reloadModel(modelDef.node().value);
+});
+
+// var moveZoomControlsToTop = function() {
+//   var transformControl = d3.select('#svg-pan-zoom-controls');
+//   if (transformControl) {
+//     var transform = transformControl.attr('transform');
+//     var transformTop = transform.replace(/translate\((\d*)\s+(\d*)\)/, "translate($1 0)");
+//     d3.select('#svg-pan-zoom-controls').attr('transform', transformTop);
+//   }
+// }
+
+</script>
+{% endblock %}
