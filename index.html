@@ -17,15 +17,23 @@
   <body>
     <!-- Always shows a header, even in smaller screens. -->
     <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-drawer">
-      <header class="mdl-layout__header">
+      
+      <!-- Header -->
+      <header class="mdl-layout__header">  
+        
         <div class="mdl-layout__header-row">
           <!-- Title -->
           <span class="mdl-layout-title">CaffeJS</span>
+        
           <!-- Add spacer, to align navigation to the right -->
           <div class="mdl-layout-spacer"></div>
         </div>
+        
+        <!-- Github Fork -->
         <a target="_new" href="https://github.com/chaosmail/caffejs"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
       </header>
+      
+      <!-- Menu -->
       <div class="mdl-layout__drawer">
         <span class="mdl-layout-title">CaffeJS</span>
         <nav class="mdl-navigation">
@@ -42,6 +50,8 @@
           <a class="mdl-navigation__link " href="deepdream.html">DeepDream (GoogLeNet)</a>
         </nav>
       </div>
+
+      <!-- Content -->
       <main class="mdl-layout__content">
         <div class="page-content">
           
@@ -99,8 +109,10 @@ Total number of params 62,378,344 (memory: 249.513376Mb):
 Total number of layers 143
 Total number of params 6,998,552 (memory: 27.994208Mb):
 </code></pre><p>Please note that these samples don&#39;t load the networks&#39; weights but only the structure with default initialization.</p>
-<h3 id="imagenet-classification-using-googlenet">ImageNet Classification using GoogLeNet</h3>
+<h3 id="webcam-classification-using-googlenet">Webcam Classification using GoogLeNet</h3>
 <p><a href="https://chaosmail.github.io/caffejs/webcam.html">The demo <code>webcam.html</code></a> uses the pretrained GoogLeNet model from Caffe (trained on ImageNet) to perform classification entirely in your browser using images from your webcam.</p>
+<h3 id="imagenet-classification-using-squeezenet">ImageNet Classification using SqueezeNet</h3>
+<p><a href="https://chaosmail.github.io/caffejs/imagenet.html">The demo <code>imagenet.html</code></a> uses the pretrained SqueezeNet model (trained on ImageNet) to perform classification entirely in your browser using images from the ImageNet 2011 dataset.</p>
 <h3 id="deepdream">DeepDream</h3>
 <p><a href="https://chaosmail.github.io/caffejs/deepdream.html">The <code>deepdream.html</code></a> is a cool example that runs the famous <a href="https://github.com/google/deepdream/blob/master/dream.ipynb">DeepDream</a> demo entirely in your browser - entirely in JavaScript of course. It uses the pretrained GoogLeNet from Caffe and runs the computation as webworker.</p>
 
@@ -108,8 +120,5 @@ Total number of params 6,998,552 (memory: 27.994208Mb):
       </main>
     </div>
 
-  <!-- Material Design fonts -->
-  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700">
-  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/icon?family=Material+Icons">
   </body>
 </html>

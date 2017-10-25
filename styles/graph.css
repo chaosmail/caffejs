@@ -18,7 +18,6 @@ g.layer-concat > rect {
   fill: #129d5a;
 }
 
-
 g.layer-input > rect, g.layer-softmax > rect {
   fill: #f4b400;
 }

@@ -2,7 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title>CaffeJS | Deep Learning Models</title>
+    <title>CaffeJS | Deep Learning Model Creator</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -26,7 +26,15 @@
 
 <style>
   .page-content {
+    height: 100%;
+    position: relative;
     max-width: none;
+  }
+
+  #model-def {
+    min-height: 24rem;
+    width: 100%;
+    height: 100% !important;
   }
 </style>
 
@@ -61,8 +69,8 @@
           <a class="mdl-navigation__link " href="development-guide.html">Development Guide</a>
           <div class="drawer-separator"></div>
           <span class="mdl-navigation__link" href="">Examples</span>
-          <a class="mdl-navigation__link is-active" href="models.html">Models</a>
-          <a class="mdl-navigation__link " href="creator.html">Model Creator</a>
+          <a class="mdl-navigation__link " href="models.html">Models</a>
+          <a class="mdl-navigation__link is-active" href="creator.html">Model Creator</a>
           <a class="mdl-navigation__link " href="webcam.html">Webcam (GoogLeNet)</a>
           <a class="mdl-navigation__link " href="imagenet.html">ImageNet (SqueezeNet)</a>
           <a class="mdl-navigation__link " href="deepdream.html">DeepDream (GoogLeNet)</a>
@@ -74,28 +82,11 @@
         <div class="page-content">
           
 <div class="mdl-grid grid-container">
-  <div class="mdl-cell mdl-cell--6-col mdl-grid">
-    <div class="controls">
-      <select>
-        <option value="alexnet">AlexNet</option>
-        <option selected="selected" value="googlenet">GoogLeNet</option>
-        <option value="squeezenet">SqueezeNet</option>
-        <option value="vgg-cnn-s">VGG CNN S</option>
-        <option value="vgg-cnn-m">VGG CNN M</option>
-        <option value="vgg-cnn-f">VGG CNN F</option>
-        <option value="vgg-face">VGG_FACE</option>
-        <option value="vgg-16">VGG ILSVRC 16</option>
-        <option value="vgg-19">VGG ILSVRC 19</option>
-        <option value="nin">NiN</option>
-
-        <!--Needs some layers first!
-        <option value="models/ResNet/ResNet-50-deploy.prototxt">ResNet-50</option>
-        <option value="models/ResNet/ResNet-101-deploy.prototxt">ResNet-101</option>
-        <option value="models/ResNet/ResNet-152-deploy.prototxt">ResNet-152</option>-->
-      </select>
-    </div>
+  <div class="mdl-cell mdl-cell--6-col">
+    <p>Paste some Caffe mode definition here. Press `shift` + `enter` to update model</p>
   </div>
   <div class="mdl-cell mdl-cell--3-col">
+  
     <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-compact">
       <input type="checkbox" id="switch-compact" class="mdl-switch__input" checked>
       <span class="mdl-switch__label">Compact</span>
@@ -107,68 +98,49 @@
       <span class="mdl-switch__label">Zoom</span>
     </label>
   </div>
-  <div class="mdl-cell mdl-cell--12-col">
+  <div class="mdl-cell mdl-cell--6-col">
+    <textarea id="model-def"></textarea>
+  </div>
+  <div class="mdl-cell mdl-cell--6-col">
     <div class="model"></div>
   </div>
 </div>
 
 <script language="JavaScript">
 
-var urls = {
-  'alexnet': 'models/bvlc_alexnet/compact.prototxt',
-  'googlenet': 'models/bvlc_googlenet/deploy.prototxt',
-  'squeezenet': 'models/squeezenet/compact.prototxt',
-  'vgg-cnn-s': 'models/VGG_CNN_S/deploy.prototxt',
-  'vgg-cnn-m': 'models/VGG_CNN_M/deploy.prototxt',
-  'vgg-cnn-f': 'models/VGG_CNN_F/deploy.prototxt',
-  'vgg-face': 'models/VGG_FACE/VGG_FACE_deploy.prototxt',
-  'vgg-16': 'models/VGG_ILSVRC_16/deploy.prototxt',
-  'vgg-19': 'models/VGG_ILSVRC_19/deploy.prototxt',
-  'nin': 'models/nin_imagenet/deploy.prototxt',
+var modelDef = d3.select("#model-def");
+
+modelDef.on("keydown", function() {
+  var e = d3.event;
+  if (e.key == "Enter" && e.shiftKey == true) {
+    console.clear();
+    reloadModel(modelDef.node().value);
+    d3.event.stopPropagation();
+    d3.event.preventDefault();
+  }
+});
+
+d3.select('#switch-zoom').on('change', function(){
+  updateZoom();
+});
+
+function reloadModel(def) {
+  var comapct = d3.select('#switch-compact').property("checked");
+
+  // Let's create a new model from the definition
+  var model = new Net.CaffeModel().fromText(def);
+  
+  // Debug the structure
+  model.debugStructure();
+
+  // Render the Graph structure
+  var dag = Utils.GraphDrawer.fromNet(model, comapct);
+  dag.render('.model', '100%');
+
+  initZoom();
 }
 
 var panZoomInstance;
-
-function loadModel(url) {
-
-  // Let's create a new model from Caffe
-  var model = new Net.CaffeModel(url);
-  var dag;
-
-  var comapct = d3.select('#switch-compact').property("checked");
-
-  model.load().then(function(d){
-    
-    // Debug the structure
-    model.debugStructure();
-
-    // Render the Graph structure
-    dag = Utils.GraphDrawer.fromNet(model, comapct);
-    dag.render('.model', '100%');
-
-    initZoom();
-  });
-}
-
-d3.select('.controls > select').on('change', function(){
-  var model = d3.select('.controls > select').property("value");
-  console.clear();
-  loadModel(urls[model]);
-});
-
-d3.select('#switch-compact').on('change', function(){
-  var model = d3.select('.controls > select').property("value");
-  console.clear();
-  loadModel(urls[model]);
-});
-
-var moveZoomControlsToTop = function() {
-  var transform = d3.select('#svg-pan-zoom-controls').attr('transform');
-  if (transform) {
-    var transformTop = transform.replace(/translate\((\d*)\s+(\d*)\)/, "translate($1 0)");
-    d3.select('#svg-pan-zoom-controls').attr('transform', transformTop);
-  }
-}
 
 var initZoom = function() {
   panZoomInstance = svgPanZoom('.model > svg', {
@@ -185,6 +157,7 @@ var initZoom = function() {
 
 var updateZoom = function() {
   var zoom =  d3.select('#switch-zoom').property("checked");
+
   if (panZoomInstance) {
     if (zoom) {
       panZoomInstance.enableControlIcons();
@@ -200,25 +173,19 @@ var updateZoom = function() {
   }
 }
 
-d3.select('#switch-zoom').on('change', function(){
-  updateZoom();
+d3.select('#switch-compact').on('change', function(){
+  console.clear();
+  reloadModel(modelDef.node().value);
 });
 
-var hash = window.location.hash.substr(1);
-
-if (hash) {
-  loadModel(urls[hash]);
-
-  d3.select('.controls > select [selected="selected"]')
-    .attr('selected', '');
-
-  d3.select('.controls > select [value="' + hash + '"]')
-    .attr('selected', 'selected');
-}
-else {
-  loadModel(urls['googlenet']);
-}
-
+// var moveZoomControlsToTop = function() {
+//   var transformControl = d3.select('#svg-pan-zoom-controls');
+//   if (transformControl) {
+//     var transform = transformControl.attr('transform');
+//     var transformTop = transform.replace(/translate\((\d*)\s+(\d*)\)/, "translate($1 0)");
+//     d3.select('#svg-pan-zoom-controls').attr('transform', transformTop);
+//   }
+// }
 
 </script>
 

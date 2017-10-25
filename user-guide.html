@@ -17,15 +17,23 @@
   <body>
     <!-- Always shows a header, even in smaller screens. -->
     <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header mdl-layout--fixed-drawer">
-      <header class="mdl-layout__header">
+      
+      <!-- Header -->
+      <header class="mdl-layout__header">  
+        
         <div class="mdl-layout__header-row">
           <!-- Title -->
           <span class="mdl-layout-title">CaffeJS</span>
+        
           <!-- Add spacer, to align navigation to the right -->
           <div class="mdl-layout-spacer"></div>
         </div>
+        
+        <!-- Github Fork -->
         <a target="_new" href="https://github.com/chaosmail/caffejs"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
       </header>
+      
+      <!-- Menu -->
       <div class="mdl-layout__drawer">
         <span class="mdl-layout-title">CaffeJS</span>
         <nav class="mdl-navigation">
@@ -42,6 +50,8 @@
           <a class="mdl-navigation__link " href="deepdream.html">DeepDream (GoogLeNet)</a>
         </nav>
       </div>
+
+      <!-- Content -->
       <main class="mdl-layout__content">
         <div class="page-content">
           
@@ -75,57 +85,10 @@ p.parse(&#39;models/age_net/mean.binaryproto&#39;).then(function(data){
 <p>You can debug the mean values by rendering the Volume to the screen. Add the following line to the callback function to render the Volume to a Canvas.</p>
 <pre><code class="lang-js">ImgJS.Image.fromMean(mean).render();
 </code></pre>
-<h2 id="datasets">Datasets</h2>
-<p>Dealing with large datasets in JavaScript is a pain. We don&#39;t want to duplicate the images on our server, but we also don&#39;t want to maintain a long list of URLs in every application. Therefore I create a small Rest API <code>https://dataset.at/</code> in order to request URLs from images of certain datasets.</p>
-<p>For evaluation, we often want random images from a dataset, such as ImageNet 2011. This is exactly what the API provides you.</p>
-<h3 id="imagenet">ImageNet</h3>
-<p>The REST service <code>https://dataset.at/imagenet/sample</code> returns an URL to a random image form ImageNet based on <code>http://image-net.org/download-imageurls</code> (Fall 2011 Release). It contains 1,824,000 URLs to image hosted on flickr.com over https (the other providers seem to be down). The API returns a JSON object similar to </p>
-<pre><code class="lang-json">{
-  &quot;error&quot;:false,
-  &quot;data&quot;:{
-    &quot;_id&quot;:&quot;5813ae418988e03865cfa567&quot;,
-    &quot;id&quot;:&quot;n02669295_21812&quot;,
-    &quot;url&quot;:&quot;https://farm3.static.flickr.com/2414/2209258146_5b44b0290a.jpg&quot;
-  }
-}
-</code></pre>
-<p>The field <code>id</code> represents the ImageNet image ID and it is formatted as xxxx_yyyy, where xxxx represents the WordNet ID (wnid) of this image. The WordNet ID corresponds with the class label.</p>
-<p>Using the <code>fetch</code> API and <code>ImgJS</code> (a module from CaffeJS) you can load a new random image via following code.</p>
-<pre><code class="lang-javascript">var apiUrl = &#39;https://dataset.at/imagenet/sample&#39;;
-fetch(new Request(apiUrl)).then(function(response){
-  response.json().then(function(d){
-    var wnid = d.data.id.split(&#39;_&#39;)[0];
-    var url = d.data.url);
-    var image = new ImgJS.Image(url);
-    image.load().then(function(){
-      image.render();
-    });
-  });
-});
-</code></pre>
-<p>Using <code>jQuery</code> you can load an image using the following snippet.</p>
-<pre><code class="lang-javascript">var apiUrl = &#39;https://dataset.at/imagenet/sample&#39;;
-$.getJSON(apiUrl, function(d) {
-  $(&#39;&lt;img src=&quot;&#39;+ d.data.url +&#39;&quot;&gt;&#39;).load(function() {
-    $(this).appendTo(&quot;body&quot;);
-  });
-});
-</code></pre>
-<p>Using <code>curl</code> you can download a new random image via the following one-liner.</p>
-<pre><code class="lang-shell">curl -s -k https://dataset.at/imagenet/sample | jq -r &#39;.data.url&#39; | xargs curl -o image.jpg
-</code></pre>
-<p> If you prefer the original filename, you can use <code>curl -O</code> instead.</p>
-<h3 id="cifar10-not-yet-supported-">CIFAR10 (not yet supported)</h3>
-<p>The REST service <code>https://dataset.at/cifar10/sample</code> returns an URL to a random image from the CIFAR10 dataset based on <code>https://www.cs.toronto.edu/~kriz/cifar.html</code>.</p>
-<h3 id="mnist-not-yet-supported-">MNIST (not yet supported)</h3>
-<p>The REST service <code>https://dataset.at/mnist/sample</code> returns an URL to a random image from the mnist dataset based on <code>http://cs.nyu.edu/~roweis/data/mnist_train{0-9}.jpg</code> and <code>http://cs.nyu.edu/~roweis/data/mnist_test{0-9}.jpg</code>.</p>
 
         </div>
       </main>
     </div>
 
-  <!-- Material Design fonts -->
-  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700">
-  <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/icon?family=Material+Icons">
   </body>
 </html>
