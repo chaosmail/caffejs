@@ -33,11 +33,22 @@ namespace Utils {
       super();
     }
 
+    destructor() {
+
+      // Clear the events
+      if (window) {
+        window.addEventListener("resize", null);
+      }
+    }
+
     render(element, width?, height?) {
+      this.width = width;
+      this.height = height;
+
       // Create the renderer
       var render = new dagreD3.render();
       this.graph = this.compact ? this.createCompactGraph() : this.createGraph();
-
+      
       // Clean
       this.$elem = d3.select(element);
       this.$elem.selectAll('*').remove();
@@ -48,17 +59,12 @@ namespace Utils {
       this.$g = this.$svg.append("g");
       render(this.$g, this.graph);
 
-      this.width = width || this.graph.graph().width;
-      this.height = height || this.graph.graph().height;
+      this.postProcessGraph();
 
-      // Center the graph
-      var xOffset = (this.width - this.graph.graph().width) / 2;
-      if (xOffset) {
-        this.$g.attr("transform", "translate(" + xOffset + ")");
+      // put the proper event here
+      if (window) {
+        window.addEventListener("resize", () => this.postProcessGraph());
       }
-
-      this.$svg.attr('width', this.width);
-      this.$svg.attr('height', this.height);
 
       return this;
     }
@@ -232,6 +238,26 @@ namespace Utils {
       g.layers = model.layers;
       g.edges = model.edges;
       return g;
+    }
+
+    postProcessGraph() {
+      var containerBBox = this.$elem[0][0].getBoundingClientRect();
+      
+      // Set the SVG coordinates
+      this.$svg.attr('width', this.width || this.graph.graph().width);
+      this.$svg.attr('height', this.height || this.graph.graph().height);
+
+      // Center the graph
+      var xOffset = (containerBBox.width - this.graph.graph().width) / 2;
+      if (xOffset) {
+        this.$g.attr("transform", "translate(" + xOffset + ")");
+      }
+
+      // Center the overflowing text
+      this.$svg.selectAll('.layer foreignObject > div').style({
+        "margin": "0 -1000%",
+        "display": "block"
+      });
     }
   }
 }

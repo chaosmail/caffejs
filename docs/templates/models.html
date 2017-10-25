@@ -15,6 +15,12 @@
 <script src="libs/svg-pan-zoom.min.js"></script>
 <link rel="stylesheet" href="styles/graph.css">
 
+<style>
+  .page-content {
+    max-width: none;
+  }
+</style>
+
 {% endblock %}
 
 {% block content %}
@@ -78,7 +84,8 @@ function loadModel(url) {
 
   // Let's create a new model from Caffe
   var model = new Net.CaffeModel(url);
-  
+  var dag;
+
   var comapct = d3.select('#switch-compact').property("checked");
 
   model.load().then(function(d){
@@ -87,7 +94,7 @@ function loadModel(url) {
     model.debugStructure();
 
     // Render the Graph structure
-    var dag = Utils.GraphDrawer.fromNet(model, comapct);
+    dag = Utils.GraphDrawer.fromNet(model, comapct);
     dag.render('.model', '100%');
 
     initZoom();

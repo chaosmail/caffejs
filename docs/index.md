@@ -65,9 +65,13 @@ Total number of params 6,998,552 (memory: 27.994208Mb):
 
 Please note that these samples don't load the networks' weights but only the structure with default initialization.
 
-### ImageNet Classification using GoogLeNet
+### Webcam Classification using GoogLeNet
 
 [The demo `webcam.html`](https://chaosmail.github.io/caffejs/webcam.html) uses the pretrained GoogLeNet model from Caffe (trained on ImageNet) to perform classification entirely in your browser using images from your webcam.
+
+### ImageNet Classification using SqueezeNet
+
+[The demo `imagenet.html`](https://chaosmail.github.io/caffejs/imagenet.html) uses the pretrained SqueezeNet model (trained on ImageNet) to perform classification entirely in your browser using images from the ImageNet 2011 dataset.
 
 ### DeepDream
 
