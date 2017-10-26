@@ -46,10 +46,9 @@
       Restart<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>
       <button onclick="cancel()" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--raised mdl-button--accent webcam-trigger" data-upgraded=",MaterialButton,MaterialRipple">
       Stop<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>
-      <select name="endLayer">
-          <option>conv1/7x7_s2</option>   
-          <option>conv2/3x3_reduce</option>   
-          <option selected="selected">inception_3a/output</option>   
+      <select name="endLayer">  
+          <option selected="selected">conv2/3x3_reduce</option>   
+          <option>inception_3a/output</option>   
           <option>inception_3b/output</option>   
           <option>inception_4a/output</option>   
           <option>inception_4b/output</option>   
@@ -69,7 +68,7 @@
   var imgUrl = "data/deepdream/sky.jpg";
   var image;
   var canvas = document.getElementById('image');
-  var params = {iter_n:10, octave_n:4, end:'inception_3a/output'};
+  var params = {iter_n:10, octave_n:4, end:'conv2/3x3_reduce'};
   var progressBar = document.getElementById('progress');
   // the mean value can be found in train_val.prototxt
   var mean = [104.0, 116.0, 122.0];
