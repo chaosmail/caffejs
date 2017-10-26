@@ -96,6 +96,8 @@
       <button onclick="cancel()" class="mdl-button mdl-js-button mdl-js-ripple-effect mdl-button--raised mdl-button--accent webcam-trigger" data-upgraded=",MaterialButton,MaterialRipple">
       Stop<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></button>
       <select name="endLayer">
+          <option>conv1/7x7_s2</option>   
+          <option>conv2/3x3_reduce</option>   
           <option selected="selected">inception_3a/output</option>   
           <option>inception_3b/output</option>   
           <option>inception_4a/output</option>   
@@ -147,7 +149,7 @@
           console.log('Running iteration ' + e.data.iteration + ' of octave ' + e.data.octave);
           image = ImgJS.Image.fromVol(Net.Vol.fromJSON(e.data.output), mean, [2,1,0]);
           image.render(canvas);
-          var v = 100 * (e.data.iteration + e.data.octave*params.iter_n) / (params.octave_n*params.iter_n);
+          var v = 100 * (e.data.iteration + e.data.octave*params.iter_n*1.0) / (params.octave_n*params.iter_n*1.0);
           progressBar.MaterialProgress.setProgress(v);
           break;
         

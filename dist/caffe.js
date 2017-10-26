@@ -6512,7 +6512,6 @@ var Utils;
             }
         };
         GraphDrawer.prototype.render = function (element, width, height) {
-            var _this = this;
             this.width = width;
             this.height = height;
             // Create the renderer
@@ -6526,6 +6525,10 @@ var Utils;
             this.$g = this.$svg.append("g");
             render(this.$g, this.graph);
             this.postProcessGraph();
+            return this;
+        };
+        GraphDrawer.prototype.autoScale = function () {
+            var _this = this;
             // put the proper event here
             if (window) {
                 window.addEventListener("resize", function () { return _this.postProcessGraph(); });
