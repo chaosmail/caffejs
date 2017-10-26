@@ -93,7 +93,7 @@
         <br><em>Iandola et al., SqueezeNet: AlexNet-level accuracy with 50x fewer parameters and &lt;0.5MB model size, CoRR, 2016</em>
       </div>
       <div class="mdl-card__actions mdl-card--border">
-        <a href="https://arxiv.org/pdf/1409.4842v1.pdf" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-upgraded=",MaterialButton,MaterialRipple">
+        <a href="https://arxiv.org/pdf/1602.07360.pdf" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-upgraded=",MaterialButton,MaterialRipple">
         Paper<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></a>
         <a href="models.html#squeezenet" class="mdl-button mdl-js-button mdl-js-ripple-effect" data-upgraded=",MaterialButton,MaterialRipple">
         Model Structure<span class="mdl-button__ripple-container"><span class="mdl-ripple"></span></span></a>
@@ -165,14 +165,16 @@
   var mean = [104.0, 116.0, 122.0];
 
   loadModel();
+
+  var curImgIndex = 0;
   nextImage();
 
   function nextImage() {
-    var randImg = imagenet_urls[Math.floor(Math.random() * imagenet_urls.length)];
+    var currImg = imagenet_urls[curImgIndex++ % imagenet_urls.length];
 
-    console.log('Loading image ' + randImg.label + ': ' + randImg.url);
-    image = new ImgJS.Image(randImg.url);
-    target = randImg.label.split("_")[0];
+    console.log('Loading image ' + currImg.label + ': ' + currImg.url);
+    image = new ImgJS.Image(currImg.url);
+    target = currImg.label.split("_")[0];
     image.load().then(function(){
       image.render($imgSrc);
     });

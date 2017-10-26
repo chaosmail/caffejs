@@ -95,7 +95,7 @@ function loadModel(url) {
 
     // Render the Graph structure
     dag = Utils.GraphDrawer.fromNet(model, comapct);
-    dag.render('.model', '100%');
+    dag.render('.model', '100%').autoScale();
 
     initZoom();
   });
@@ -128,7 +128,8 @@ var initZoom = function() {
     dblClickZoomEnabled: false,
     fit: false,
     center: false,
-    minZoom: 0.001
+    minZoom: 0.001,
+    preventMouseEventsDefault: false
   });
 
   updateZoom();

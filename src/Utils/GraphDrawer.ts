@@ -61,6 +61,11 @@ namespace Utils {
 
       this.postProcessGraph();
 
+      return this;
+    }
+
+    autoScale() {
+      
       // put the proper event here
       if (window) {
         window.addEventListener("resize", () => this.postProcessGraph());
