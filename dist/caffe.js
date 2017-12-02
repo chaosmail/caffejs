@@ -6026,55 +6026,7 @@ var Parser;
             return _super !== null && _super.apply(this, arguments) || this;
         }
         PrototxtParser.prototype.parseString = function (raw) {
-            return this.parsePrototxt(raw);
-        };
-        PrototxtParser.prototype.parsePrototxt = function (raw, level) {
-            if (level === void 0) { level = 0; }
-            var json = {};
-            var match;
-            if (level == 0) {
-                var regexVal = /(?:^|\n)(\w+):\s"*([\w/.]+)"*/gi;
-                var regexObj = /(?:^|\n)(\w+)\s\{([\S\s]*?)\n\}/gi;
-            }
-            else {
-                var indent = '(?:^|\\n)\\s{' + level + '}';
-                var key = '(\\w+)';
-                var regexVal = new RegExp(indent + key + '\\s*:\\s*"*([\\w/.]+)"*', "gi");
-                var regexObj = new RegExp(indent + key + '\\s*\\{\\s*\\n([\\s\\S]*?)\\n\\s{' + level + '}\\}', "gi");
-            }
-            while (match = regexVal.exec(raw)) {
-                var key = match[1];
-                var value = match[2];
-                if (json[key] !== undefined) {
-                    if (Array.isArray(json[key])) {
-                        json[key].push(value);
-                    }
-                    else {
-                        json[key] = [json[key]];
-                        json[key].push(value);
-                    }
-                }
-                else {
-                    json[match[1]] = value;
-                }
-            }
-            while (match = regexObj.exec(raw)) {
-                var key = match[1];
-                var value = this.parsePrototxt(match[2], level + 2);
-                if (json[key] !== undefined) {
-                    if (Array.isArray(json[key])) {
-                        json[key].push(value);
-                    }
-                    else {
-                        json[key] = [json[key]];
-                        json[key].push(value);
-                    }
-                }
-                else {
-                    json[key] = value;
-                }
-            }
-            return json;
+            return prototxtParser.parse(raw);
         };
         return PrototxtParser;
     }(Parser.TextParser));
