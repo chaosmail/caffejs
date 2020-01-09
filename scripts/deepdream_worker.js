@@ -1,6 +1,6 @@
 importScripts(
   '../libs/d3.min.js',
-  '../dist/caffe.js'
+  '../dist/bundle.js'
 );
 
 var window = self;
